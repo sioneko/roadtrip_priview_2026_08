@@ -1,0 +1,2650 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>鸟取・岛根・山口自驾路线广度预览</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://tile.openstreetmap.org">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #66737f;
+      --line: #d8e0e7;
+      --panel: rgba(255, 255, 255, 0.94);
+      --panel-strong: #ffffff;
+      --shadow: 0 18px 60px rgba(24, 38, 52, 0.16);
+      --blue: #2563eb;
+      --blue-soft: #e8f0ff;
+      --green: #0f8b70;
+      --orange: #d8692a;
+      --plum: #8a3ffc;
+      --sea: #1f9bb4;
+      --sand: #f2c66d;
+      --road: #293241;
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--ink);
+      background: #eaf0f5;
+      overflow: hidden;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 640px;
+      background: #dfeaf0;
+    }
+
+    #map {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(110deg, rgba(248, 224, 163, 0.6), rgba(137, 197, 204, 0.35)),
+        #dce9ee;
+      z-index: 0;
+    }
+
+    #map::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.12) 34%, rgba(255, 255, 255, 0.2) 100%),
+        radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.55), transparent 24%);
+      z-index: 401;
+    }
+
+    .map-fallback {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      text-align: center;
+      color: #22313c;
+      background:
+        linear-gradient(135deg, rgba(242, 198, 109, 0.55), rgba(31, 155, 180, 0.38)),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.2) 0 1px, transparent 1px 18px);
+      z-index: 1;
+    }
+
+    .map-fallback[hidden] {
+      display: none;
+    }
+
+    .fallback-inner {
+      width: min(620px, 92vw);
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .shell {
+      position: relative;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: minmax(300px, 360px) minmax(0, 1fr) minmax(300px, 360px);
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 14px;
+      height: 100%;
+      padding: 16px;
+      pointer-events: none;
+    }
+
+    .topbar,
+    .side-panel,
+    .detail-panel,
+    .player {
+      pointer-events: auto;
+      border: 1px solid rgba(216, 224, 231, 0.88);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar {
+      grid-column: 1 / 4;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+    }
+
+    .title-block {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 4px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--green);
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .route-meta {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #33414d;
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    button.meta-pill {
+      justify-content: center;
+    }
+
+    .visitor-pill {
+      color: #0b3f6f;
+      background: var(--blue-soft);
+      border-color: rgba(37, 99, 235, 0.24);
+      font-weight: 800;
+    }
+
+    .side-panel {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: stretch;
+      min-height: 0;
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .day-tabs {
+      display: flex;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line);
+      background: rgba(248, 251, 253, 0.9);
+      scrollbar-width: thin;
+    }
+
+    .day-tab {
+      flex: 0 0 112px;
+      min-height: 54px;
+      padding: 8px 6px;
+      color: #485560;
+      background: transparent;
+      border-right: 1px solid var(--line);
+      text-align: center;
+    }
+
+    .day-tab:last-child {
+      border-right: 0;
+    }
+
+    .day-tab strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .day-tab span {
+      display: block;
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .day-tab.active {
+      color: #0b3f6f;
+      background: var(--blue-soft);
+      box-shadow: inset 0 -3px 0 var(--blue);
+    }
+
+    .day-summary {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .day-summary h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .day-summary p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .day-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .stat {
+      min-width: 0;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 14px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .stop-list {
+      min-height: 0;
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .stop-item {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      color: inherit;
+      background: transparent;
+      text-align: left;
+      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+
+    .stop-item + .stop-item {
+      margin-top: 6px;
+    }
+
+    .stop-item:hover,
+    .stop-item.active {
+      border-color: rgba(37, 99, 235, 0.28);
+      background: rgba(232, 240, 255, 0.88);
+      transform: translateY(-1px);
+    }
+
+    .stop-index {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--road);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .stop-main {
+      min-width: 0;
+    }
+
+    .stop-topline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .stop-time {
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .stop-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .stop-sub {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .map-chip {
+      position: absolute;
+      left: 50%;
+      top: 96px;
+      z-index: 6;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      max-width: min(540px, calc(100vw - 760px));
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid rgba(216, 224, 231, 0.88);
+      border-radius: 999px;
+      color: #26333e;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 12px 36px rgba(24, 38, 52, 0.14);
+      pointer-events: auto;
+      backdrop-filter: blur(18px);
+    }
+
+    .map-chip strong,
+    .map-chip span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .map-chip strong {
+      font-size: 13px;
+    }
+
+    .map-chip span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .detail-panel {
+      grid-column: 3;
+      grid-row: 2;
+      align-self: end;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .photo-strip {
+      position: relative;
+      min-height: 168px;
+      background:
+        linear-gradient(135deg, rgba(23, 33, 43, 0.08), transparent),
+        linear-gradient(120deg, var(--sand), var(--sea));
+      overflow: hidden;
+    }
+
+    .photo-strip::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, transparent 42%, rgba(0, 0, 0, 0.48)),
+        var(--photo, linear-gradient(120deg, var(--sand), var(--sea)));
+      background-size: cover;
+      background-position: center;
+      filter: saturate(1.02);
+      transform: scale(1.01);
+    }
+
+    .photo-label {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 12px;
+      z-index: 1;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      color: #fff;
+    }
+
+    .photo-label strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1.15;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.32);
+    }
+
+    .photo-label span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.22);
+      font-size: 12px;
+      white-space: nowrap;
+      backdrop-filter: blur(10px);
+    }
+
+    .detail-body {
+      padding: 16px;
+      background: var(--panel-strong);
+    }
+
+    .detail-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .detail-meta span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #f1f5f7;
+      color: #485560;
+      font-size: 12px;
+    }
+
+    .detail-body p {
+      margin: 0;
+      color: #34414d;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .note {
+      margin-top: 14px;
+      padding: 10px 11px;
+      border-left: 3px solid var(--orange);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      color: #5b3d24;
+      background: #fff4e7;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .comment-panel {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .comment-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .comment-head strong {
+      font-size: 13px;
+    }
+
+    .comment-count {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .sync-status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: #485560;
+      background: #eef3f7;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .sync-status.online {
+      color: #0f6b57;
+      background: #e6f7f1;
+    }
+
+    .comment-form {
+      display: grid;
+      gap: 8px;
+    }
+
+    .comment-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .comment-input,
+    .comment-text {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: #fff;
+      outline: 0;
+    }
+
+    .comment-input {
+      height: 36px;
+      padding: 0 10px;
+    }
+
+    .comment-text {
+      min-height: 58px;
+      resize: vertical;
+      padding: 9px 10px;
+      line-height: 1.45;
+    }
+
+    .comment-input:focus,
+    .comment-text:focus {
+      border-color: rgba(37, 99, 235, 0.52);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .color-options {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .color-options input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .color-dot {
+      width: 24px;
+      height: 24px;
+      display: block;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      background: var(--comment-color);
+      box-shadow: 0 0 0 1px rgba(23, 33, 43, 0.16);
+      cursor: pointer;
+    }
+
+    .color-options input:checked + .color-dot {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22), 0 0 0 1px rgba(23, 33, 43, 0.18);
+      transform: scale(1.08);
+    }
+
+    .comment-submit {
+      height: 36px;
+      border-radius: var(--radius);
+      color: #fff;
+      background: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .comment-cancel {
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: #34414d;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .comment-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .comment-item {
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--comment-color);
+      border-radius: var(--radius);
+      background: #f8fbfd;
+    }
+
+    .comment-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .comment-meta strong {
+      color: #26333e;
+      font-size: 12px;
+    }
+
+    .comment-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .comment-action {
+      min-height: 28px;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: #34414d;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .comment-action.danger {
+      color: #9f1239;
+      border-color: rgba(159, 18, 57, 0.24);
+      background: #fff1f2;
+    }
+
+    .comment-item p {
+      margin: 0;
+      color: #34414d;
+      font-size: 13px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .comment-empty {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .player {
+      grid-column: 1 / 4;
+      grid-row: 3;
+      display: grid;
+      grid-template-columns: auto minmax(180px, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 12px;
+      border-radius: var(--radius);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: #22313c;
+      background: #fff;
+      font-size: 18px;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .icon-btn:hover {
+      border-color: rgba(37, 99, 235, 0.4);
+      background: var(--blue-soft);
+      transform: translateY(-1px);
+    }
+
+    .icon-btn.primary {
+      width: 48px;
+      color: #fff;
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .timeline-wrap {
+      min-width: 0;
+    }
+
+    .timeline-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .timeline-head strong,
+    .timeline-head span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .timeline-head span {
+      color: var(--muted);
+    }
+
+    .scrubber {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .mini-stops {
+      display: grid;
+      grid-template-columns: repeat(var(--count), minmax(18px, 1fr));
+      gap: 4px;
+      margin-top: 7px;
+    }
+
+    .mini-stop {
+      height: 5px;
+      border-radius: 999px;
+      background: #cbd5df;
+      transition: background 160ms ease, transform 160ms ease;
+    }
+
+    .mini-stop.done {
+      background: var(--green);
+    }
+
+    .mini-stop.active {
+      background: var(--orange);
+      transform: scaleY(1.45);
+    }
+
+    .player-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .select {
+      height: 40px;
+      min-width: 116px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: #22313c;
+      background: #fff;
+    }
+
+    .leaflet-control-attribution {
+      font-size: 10px;
+    }
+
+    .custom-marker {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--road);
+      box-shadow: 0 8px 22px rgba(27, 38, 49, 0.26);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .custom-marker.active {
+      width: 40px;
+      height: 40px;
+      background: var(--orange);
+      box-shadow: 0 14px 30px rgba(216, 105, 42, 0.34);
+    }
+
+    .moving-marker {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 3px solid #fff;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--blue);
+      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.36);
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    @media (max-width: 1180px) {
+      .shell {
+        grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+      }
+
+      .topbar,
+      .player {
+        grid-column: 1 / 3;
+      }
+
+      .detail-panel {
+        grid-column: 2;
+        grid-row: 2;
+        align-self: end;
+        max-width: 360px;
+        justify-self: end;
+      }
+
+      .map-chip {
+        max-width: min(480px, calc(100vw - 430px));
+      }
+    }
+
+    @media (max-width: 860px) {
+      html,
+      body {
+        overflow: auto;
+        background: #edf3f7;
+      }
+
+      .app {
+        display: flex;
+        flex-direction: column;
+        min-height: 100dvh;
+        height: auto;
+        overflow: visible;
+      }
+
+      #map {
+        position: relative;
+        inset: auto;
+        width: 100%;
+        height: 42dvh;
+        min-height: 260px;
+        max-height: 390px;
+        flex: 0 0 auto;
+        border-bottom: 1px solid rgba(23, 33, 43, 0.12);
+      }
+
+      .map-fallback {
+        position: absolute;
+        inset: auto;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 42dvh;
+        min-height: 260px;
+        max-height: 390px;
+      }
+
+      .shell {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: auto;
+        padding: 8px 10px calc(150px + env(safe-area-inset-bottom));
+        gap: 10px;
+        pointer-events: auto;
+      }
+
+      .topbar {
+        display: block;
+        padding: 12px;
+      }
+
+      h1 {
+        font-size: 18px;
+      }
+
+      .route-meta {
+        justify-content: flex-start;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .meta-pill {
+        min-height: 28px;
+        padding: 5px 8px;
+        font-size: 12px;
+      }
+
+      .map-chip {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        max-width: none;
+        width: auto;
+        min-height: 34px;
+        margin: 8px 10px 0;
+        padding: 7px 10px;
+        border-radius: var(--radius);
+      }
+
+      .side-panel {
+        max-height: none;
+      }
+
+      .day-tab {
+        flex-basis: 96px;
+        min-height: 46px;
+      }
+
+      .day-summary {
+        padding: 12px;
+      }
+
+      .day-summary h2 {
+        font-size: 16px;
+      }
+
+      .day-summary p {
+        font-size: 12px;
+      }
+
+      .day-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .stat {
+        padding: 7px;
+      }
+
+      .stop-list {
+        max-height: 42dvh;
+        padding: 8px;
+      }
+
+      .stop-item {
+        grid-template-columns: 36px minmax(0, 1fr);
+        padding: 8px;
+      }
+
+      .stop-index {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+      }
+
+      .detail-panel {
+        max-width: none;
+        width: 100%;
+        align-self: stretch;
+      }
+
+      .player {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        z-index: 20;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .controls,
+      .player-tools {
+        justify-content: center;
+      }
+
+      .controls {
+        gap: 6px;
+      }
+
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+      }
+
+      .icon-btn.primary {
+        width: 44px;
+      }
+
+      .timeline-head {
+        margin-bottom: 4px;
+        font-size: 12px;
+      }
+
+      .mini-stops {
+        margin-top: 4px;
+      }
+
+      .player-tools {
+        display: none;
+      }
+
+      .photo-strip {
+        min-height: 118px;
+      }
+
+      .detail-body {
+        padding: 12px;
+      }
+
+      .comment-row {
+        grid-template-columns: 1fr;
+      }
+
+      .color-options {
+        justify-content: space-between;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .day-tab {
+        flex-basis: 88px;
+      }
+
+      .day-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .meta-pill {
+        width: auto;
+        justify-content: center;
+      }
+
+      .visitor-pill {
+        width: 100%;
+      }
+
+      .photo-label {
+        display: block;
+      }
+
+      .photo-label span {
+        margin-top: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div id="map"></div>
+    <div id="mapFallback" class="map-fallback" hidden>
+      <div class="fallback-inner">
+        <strong>地图资源暂时没有加载出来</strong>
+        <p>路线、天数、景点卡片和播放控制仍然可以预览；联网后重新打开即可看到真实地图底图。</p>
+      </div>
+    </div>
+
+    <div id="mapChip" class="map-chip" aria-live="polite"></div>
+
+    <section class="shell" aria-label="鸟取、岛根和山口自驾路线广度预览">
+      <header class="topbar">
+        <div class="title-block">
+          <p class="eyebrow">San'in Road Trip Preview</p>
+          <h1>鸟取・岛根・山口自驾游广度版</h1>
+        </div>
+        <div class="route-meta">
+          <span class="meta-pill">7 天候选</span>
+          <span class="meta-pill">约 900 km+</span>
+          <span class="meta-pill">鸟取进 / 下关或山口出</span>
+          <button id="visitorBtn" class="meta-pill visitor-pill" type="button">访客：设置名字</button>
+        </div>
+      </header>
+
+      <aside class="side-panel">
+        <nav id="dayTabs" class="day-tabs" aria-label="选择行程天数"></nav>
+        <div id="daySummary" class="day-summary"></div>
+        <div id="stopList" class="stop-list"></div>
+      </aside>
+
+      <article id="detailPanel" class="detail-panel" aria-live="polite"></article>
+
+      <footer class="player">
+        <div class="controls" aria-label="路线播放控制">
+          <button id="prevBtn" class="icon-btn" type="button" title="上一个停靠点" aria-label="上一个停靠点">‹</button>
+          <button id="playBtn" class="icon-btn primary" type="button" title="播放路线" aria-label="播放路线">▶</button>
+          <button id="nextBtn" class="icon-btn" type="button" title="下一个停靠点" aria-label="下一个停靠点">›</button>
+          <button id="resetBtn" class="icon-btn" type="button" title="回到起点" aria-label="回到起点">↺</button>
+        </div>
+
+        <div class="timeline-wrap">
+          <div id="timelineHead" class="timeline-head"></div>
+          <input id="scrubber" class="scrubber" type="range" min="0" max="0" value="0" step="1" aria-label="路线进度">
+          <div id="miniStops" class="mini-stops"></div>
+        </div>
+
+        <div class="player-tools">
+          <select id="speedSelect" class="select" aria-label="播放速度">
+            <option value="1800">舒缓</option>
+            <option value="1100" selected>标准</option>
+            <option value="650">快速</option>
+          </select>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const ROUTE_DAYS = [
+      {
+        day: "Day 1",
+        short: "鸟取海岸",
+        title: "鸟取砂丘、白兔海岸与三朝温泉",
+        summary: "从鸟取市出发，先看砂丘和砂之美术馆，再沿海岸线往西，傍晚进入温泉町。",
+        distance: "约 95 km",
+        drive: "约 2.5 h",
+        overnight: "三朝温泉",
+        color: "#d8692a",
+        stops: [
+          {
+            time: "09:00",
+            name: "鸟取站 / 取车",
+            place: "Tottori Station",
+            lat: 35.494,
+            lng: 134.225,
+            stay: "30 min",
+            drive: "出发",
+            tags: ["取车", "补给"],
+            desc: "从鸟取市区取车，先把导航、停车点和当日温泉入住时间确认好。",
+            note: "如果是鸟取机场进，也可以把第一站替换成机场取车。"
+          },
+          {
+            time: "09:35",
+            name: "鸟取砂丘",
+            place: "Tottori Sand Dunes",
+            lat: 35.5397,
+            lng: 134.2289,
+            stay: "90 min",
+            drive: "约 20 min",
+            tags: ["砂丘", "海景"],
+            desc: "第一站直接进入最有辨识度的景观：砂丘、海风和日本海视野，适合慢慢走到高处看线条。",
+            note: "夏季中午沙面会很热，建议早上或傍晚停留。"
+          },
+          {
+            time: "11:20",
+            name: "砂之美术馆",
+            place: "The Sand Museum",
+            lat: 35.5416,
+            lng: 134.2324,
+            stay: "60 min",
+            drive: "约 5 min",
+            tags: ["室内", "艺术"],
+            desc: "和砂丘放在同一段体验里，作为天气不好或想拍细节时的稳定选择。",
+            note: "展期主题会变化，正式出行前需要确认开放日。"
+          },
+          {
+            time: "13:20",
+            name: "白兔神社 / 白兔海岸",
+            place: "Hakuto Shrine",
+            lat: 35.5229,
+            lng: 134.1395,
+            stay: "55 min",
+            drive: "约 35 min",
+            tags: ["神话", "海岸"],
+            desc: "沿海岸线西行，在白兔神话相关地点停靠，节奏从砂丘的开阔切到海边散步。",
+            note: "海边风大时体感会降，轻薄外套很实用。"
+          },
+          {
+            time: "15:10",
+            name: "仓吉白壁土藏群",
+            place: "Kurayoshi Shirakabe",
+            lat: 35.4336,
+            lng: 133.8249,
+            stay: "75 min",
+            drive: "约 45 min",
+            tags: ["町屋", "咖啡"],
+            desc: "白壁仓库、赤瓦与河畔街区很适合放进下午，作为从海岸到温泉之间的城市感停顿。",
+            note: "小店较早关门，想逛店的话别排太晚。"
+          },
+          {
+            time: "17:05",
+            name: "三朝温泉",
+            place: "Misasa Onsen",
+            lat: 35.4087,
+            lng: 133.8957,
+            stay: "Overnight",
+            drive: "约 25 min",
+            tags: ["温泉", "住宿"],
+            desc: "第一晚用温泉收尾，降低第二天上大山和跨县移动的疲劳。",
+            note: "晚餐时间通常固定，建议按旅馆入住要求反推当天节奏。"
+          }
+        ]
+      },
+      {
+        day: "Day 2",
+        short: "大山到松江",
+        title: "大山、境港与松江湖畔",
+        summary: "从山景转向港町，再进入岛根县松江。当天驾驶距离较长，但停靠点变化很鲜明。",
+        distance: "约 165 km",
+        drive: "约 4 h",
+        overnight: "松江",
+        color: "#0f8b70",
+        stops: [
+          {
+            time: "09:00",
+            name: "三朝温泉出发",
+            place: "Misasa Onsen",
+            lat: 35.4087,
+            lng: 133.8957,
+            stay: "15 min",
+            drive: "出发",
+            tags: ["温泉街", "出发"],
+            desc: "第二天先从温泉街出发，路线往西北方向进入大山区域。",
+            note: "山路天气变化快，出发前看一下雾和降雨。"
+          },
+          {
+            time: "10:20",
+            name: "大山寺 / 大山环山道路",
+            place: "Daisenji Temple",
+            lat: 35.3912,
+            lng: 133.5329,
+            stay: "100 min",
+            drive: "约 75 min",
+            tags: ["山景", "步道"],
+            desc: "大山是这段自驾的山景核心。可以轻量散步，也可以只做观景和咖啡停留。",
+            note: "冬季或恶劣天气要按道路状况调整。"
+          },
+          {
+            time: "12:45",
+            name: "大山牧场牛奶之里",
+            place: "Daisen Makiba Milk no Sato",
+            lat: 35.4083,
+            lng: 133.5185,
+            stay: "55 min",
+            drive: "约 15 min",
+            tags: ["午餐", "牧场"],
+            desc: "午餐安排在大山视野附近，路线不会为了吃饭大幅绕路。",
+            note: "适合做轻食，不建议把下午港町时间压得太紧。"
+          },
+          {
+            time: "14:35",
+            name: "水木茂之路",
+            place: "Mizuki Shigeru Road",
+            lat: 35.5454,
+            lng: 133.2309,
+            stay: "80 min",
+            drive: "约 70 min",
+            tags: ["街区", "伴手礼"],
+            desc: "境港的漫画主题街区很好逛，和上午的大山形成明显反差。",
+            note: "街区停车场较多，先选离主街近的点。"
+          },
+          {
+            time: "16:25",
+            name: "由志园",
+            place: "Yuushien Garden",
+            lat: 35.4898,
+            lng: 133.1689,
+            stay: "65 min",
+            drive: "约 35 min",
+            tags: ["庭园", "牡丹"],
+            desc: "进入岛根前后用庭园把节奏放慢，也能顺路经过中海一带。",
+            note: "夜间点灯活动季节性很强，正式日期需要再查。"
+          },
+          {
+            time: "18:00",
+            name: "松江湖畔入住",
+            place: "Matsue",
+            lat: 35.4648,
+            lng: 133.0585,
+            stay: "Overnight",
+            drive: "约 25 min",
+            tags: ["湖景", "住宿"],
+            desc: "第二晚住松江，方便第三天把城、水乡、庭园和出云串起来。",
+            note: "如果想看宍道湖夕阳，入住点尽量靠湖西侧或湖畔。"
+          }
+        ]
+      },
+      {
+        day: "Day 3",
+        short: "松江与出云",
+        title: "松江城、足立美术馆、出云大社",
+        summary: "上午看松江城和水边城市，下午转向出云神话线，傍晚到日御碕。",
+        distance: "约 135 km",
+        drive: "约 3.5 h",
+        overnight: "出云 / 玉造",
+        color: "#2563eb",
+        stops: [
+          {
+            time: "08:50",
+            name: "松江城",
+            place: "Matsue Castle",
+            lat: 35.4751,
+            lng: 133.0505,
+            stay: "90 min",
+            drive: "市内",
+            tags: ["国宝", "城下町"],
+            desc: "第三天从松江城开始，先把城市的历史核心看完，再转向湖和庭园。",
+            note: "城内楼梯较陡，鞋子舒适会轻松很多。"
+          },
+          {
+            time: "10:40",
+            name: "宍道湖畔",
+            place: "Lake Shinji",
+            lat: 35.4633,
+            lng: 133.0528,
+            stay: "35 min",
+            drive: "约 10 min",
+            tags: ["湖景", "散步"],
+            desc: "湖畔短暂停留，给松江这一段加一点水面和城市留白。",
+            note: "如果前一晚已看夕阳，这里可以缩短。"
+          },
+          {
+            time: "12:00",
+            name: "足立美术馆",
+            place: "Adachi Museum of Art",
+            lat: 35.3828,
+            lng: 133.1993,
+            stay: "120 min",
+            drive: "约 45 min",
+            tags: ["庭园", "美术"],
+            desc: "用美术馆和日本庭园作为中午主停靠，适合慢一点走。",
+            note: "它和出云方向有一点折返感，若想少开车可改成松江市内深度游。"
+          },
+          {
+            time: "15:20",
+            name: "出云大社",
+            place: "Izumo Taisha",
+            lat: 35.4012,
+            lng: 132.6858,
+            stay: "100 min",
+            drive: "约 80 min",
+            tags: ["神社", "神话"],
+            desc: "岛根段的精神核心，参道、拜殿和神乐殿适合安排完整时间。",
+            note: "参拜后可以把神门通的咖啡和小吃留作休息。"
+          },
+          {
+            time: "17:20",
+            name: "稻佐之滨",
+            place: "Inasa Beach",
+            lat: 35.3999,
+            lng: 132.6745,
+            stay: "35 min",
+            drive: "约 8 min",
+            tags: ["海滩", "日落"],
+            desc: "从神社到海边很近，适合把神话感延伸到傍晚的海岸。",
+            note: "如果时间紧，可以和出云大社合并为同一段停留。"
+          },
+          {
+            time: "18:10",
+            name: "日御碕灯塔",
+            place: "Hinomisaki Lighthouse",
+            lat: 35.4339,
+            lng: 132.6293,
+            stay: "50 min",
+            drive: "约 25 min",
+            tags: ["灯塔", "海岸"],
+            desc: "第三天用岛根半岛西端的海岸线收尾，视觉上很有终点感。",
+            note: "夜间山海路段注意车速，住宿不要排太远。"
+          }
+        ]
+      },
+      {
+        day: "Day 4",
+        short: "石见到津和野",
+        title: "石见银山、温泉津、益田与津和野",
+        summary: "把岛根西部拉开：世界遗产、港町温泉、石见海岸，再接到山口县边境的津和野。",
+        distance: "约 190 km",
+        drive: "约 4.5 h",
+        overnight: "津和野 / 益田",
+        color: "#8a3ffc",
+        stops: [
+          {
+            time: "09:00",
+            name: "出云市区出发",
+            place: "Izumo",
+            lat: 35.3609,
+            lng: 132.7562,
+            stay: "15 min",
+            drive: "出发",
+            tags: ["出发", "补给"],
+            desc: "从出云继续往西，今天开始把路线从神话核心区推向石见和山口方向。",
+            note: "如果前一晚住玉造温泉，到石见银山会多一点车程。"
+          },
+          {
+            time: "10:15",
+            name: "石见银山・大森町",
+            place: "Iwami Ginzan",
+            lat: 35.1132,
+            lng: 132.4408,
+            stay: "150 min",
+            drive: "约 70 min",
+            tags: ["世界遗产", "町步"],
+            desc: "世界遗产矿山和大森町街区是岛根西部的主菜，建议步行慢慢看。",
+            note: "核心区停车和交通方式有限制，正式出行前要确认停车场和接驳。"
+          },
+          {
+            time: "13:35",
+            name: "龙源寺间步",
+            place: "Ryugenji Mabu Mine Shaft",
+            lat: 35.1007,
+            lng: 132.4357,
+            stay: "60 min",
+            drive: "区域内",
+            tags: ["矿道", "历史"],
+            desc: "如果体力允许，把矿道作为石见银山的深一点体验。",
+            note: "雨天和高温天要留意步行距离，不必勉强。"
+          },
+          {
+            time: "15:10",
+            name: "温泉津温泉",
+            place: "Yunotsu Onsen",
+            lat: 35.0913,
+            lng: 132.3478,
+            stay: "75 min",
+            drive: "约 35 min",
+            tags: ["温泉", "港町"],
+            desc: "温泉津是很适合停顿的港町温泉，能把路线从银山历史带回到日本海边。",
+            note: "如果泡汤，记得给下午西行留出余量。"
+          },
+          {
+            time: "16:35",
+            name: "益田・持石海岸",
+            place: "Masuda Coast",
+            lat: 34.7056,
+            lng: 131.8409,
+            stay: "35 min",
+            drive: "约 70 min",
+            tags: ["海岸", "休息"],
+            desc: "长距离西行中安排一个海岸停靠，把驾驶节奏拆开，也给日本海线多一个候选点。",
+            note: "如果想压缩行程，这一站最容易删。"
+          },
+          {
+            time: "17:45",
+            name: "津和野",
+            place: "Tsuwano",
+            lat: 34.4667,
+            lng: 131.7736,
+            stay: "Overnight",
+            drive: "约 45 min",
+            tags: ["小京都", "夜宿"],
+            desc: "津和野作为岛根与山口之间的过渡夜宿很合适，第二天可以接萩和长门海岸线。",
+            note: "如果想少换酒店，也可以住益田，第二天直接开去萩。"
+          }
+        ]
+      },
+      {
+        day: "Day 5",
+        short: "津和野到长门",
+        title: "津和野、萩城下町、元乃隅与长门汤本",
+        summary: "从山间小镇切到萩的城下町历史，再沿北长门海岸看鸟居和海景。",
+        distance: "约 175 km",
+        drive: "约 4 h",
+        overnight: "长门汤本 / 萩",
+        color: "#c2410c",
+        stops: [
+          {
+            time: "08:50",
+            name: "太鼓谷稻成神社",
+            place: "Taikodani Inari Shrine",
+            lat: 34.4691,
+            lng: 131.7732,
+            stay: "55 min",
+            drive: "市内",
+            tags: ["神社", "町景"],
+            desc: "津和野的红色鸟居和山坡视野很醒目，适合作为进入山口段前的第一段视觉记忆。",
+            note: "如果前一晚到得早，也可以改成傍晚散步。"
+          },
+          {
+            time: "10:50",
+            name: "萩城下町",
+            place: "Hagi Castle Town",
+            lat: 34.4108,
+            lng: 131.3993,
+            stay: "120 min",
+            drive: "约 85 min",
+            tags: ["城下町", "世界遗产"],
+            desc: "萩的武家屋敷、土墙街道和陶器店适合作为山口县历史线的核心候选。",
+            note: "街区适合步行，停车后别频繁挪车。"
+          },
+          {
+            time: "13:25",
+            name: "松阴神社 / 松下村塾",
+            place: "Shoin Shrine",
+            lat: 34.4132,
+            lng: 131.4139,
+            stay: "55 min",
+            drive: "约 10 min",
+            tags: ["幕末", "历史"],
+            desc: "想把萩和明治维新的脉络连起来，这一站很适合放进候选池。",
+            note: "对历史兴趣不强的话，可把时间给萩城下町或咖啡。"
+          },
+          {
+            time: "15:10",
+            name: "元乃隅神社",
+            place: "Motonosumi Shrine",
+            lat: 34.4215,
+            lng: 131.0604,
+            stay: "70 min",
+            drive: "约 75 min",
+            tags: ["鸟居", "海崖"],
+            desc: "海边红色鸟居是山口段辨识度很高的画面，适合放在下午光线里。",
+            note: "海边停车和道路较窄，旺季需要预留机动时间。"
+          },
+          {
+            time: "17:25",
+            name: "长门汤本温泉",
+            place: "Nagato Yumoto Onsen",
+            lat: 34.3296,
+            lng: 131.1763,
+            stay: "Overnight",
+            drive: "约 45 min",
+            tags: ["温泉", "夜宿"],
+            desc: "第五晚用温泉收束，第二天进秋吉台会比较顺。",
+            note: "如果更想住海边，也可以改住萩或长门市区。"
+          }
+        ]
+      },
+      {
+        day: "Day 6",
+        short: "秋吉台与山口",
+        title: "秋吉台、秋芳洞、别府弁天池与山口市",
+        summary: "把山口县中部的喀斯特地貌、洞窟、清水池和城市文化放到同一天比较。",
+        distance: "约 145 km",
+        drive: "约 3.5 h",
+        overnight: "汤田温泉 / 防府",
+        color: "#0e7490",
+        stops: [
+          {
+            time: "09:00",
+            name: "长门汤本出发",
+            place: "Nagato Yumoto Onsen",
+            lat: 34.3296,
+            lng: 131.1763,
+            stay: "15 min",
+            drive: "出发",
+            tags: ["温泉街", "出发"],
+            desc: "从温泉街出发，今天切到山口中部的地貌和城市线。",
+            note: "秋芳洞内部湿滑，鞋底防滑会舒服很多。"
+          },
+          {
+            time: "09:55",
+            name: "秋吉台展望台",
+            place: "Akiyoshidai Plateau",
+            lat: 34.2347,
+            lng: 131.3052,
+            stay: "55 min",
+            drive: "约 45 min",
+            tags: ["喀斯特", "高原"],
+            desc: "秋吉台的高原和石灰岩地貌是山口段自然线的主轴，开车路段也很有自驾感。",
+            note: "雾天视野会受影响，但氛围也会更安静。"
+          },
+          {
+            time: "11:05",
+            name: "秋芳洞",
+            place: "Akiyoshido Cave",
+            lat: 34.2266,
+            lng: 131.3037,
+            stay: "100 min",
+            drive: "约 10 min",
+            tags: ["洞窟", "自然"],
+            desc: "从高原进入地下洞窟，和前几天的海岸、神社形成完全不同的体验类型。",
+            note: "正式行程要核对营业时间和入口停车位置。"
+          },
+          {
+            time: "13:10",
+            name: "别府弁天池",
+            place: "Beppu Benten Pond",
+            lat: 34.2636,
+            lng: 131.2306,
+            stay: "45 min",
+            drive: "约 30 min",
+            tags: ["清水", "短停"],
+            desc: "作为秋吉台周边的小尺度自然点，适合拿来比较：要不要把小清新水景放进行程。",
+            note: "如果当天想轻松，秋吉台和秋芳洞已经足够。"
+          },
+          {
+            time: "15:05",
+            name: "瑠璃光寺五重塔",
+            place: "Rurikoji Five-storied Pagoda",
+            lat: 34.1832,
+            lng: 131.4721,
+            stay: "65 min",
+            drive: "约 55 min",
+            tags: ["寺院", "山口市"],
+            desc: "山口市的标志性古建，适合给山口中部加一段安静的文化停留。",
+            note: "若遇到修缮遮挡，可以把重点转向香山公园散步。"
+          },
+          {
+            time: "17:00",
+            name: "汤田温泉",
+            place: "Yuda Onsen",
+            lat: 34.1634,
+            lng: 131.4592,
+            stay: "Overnight",
+            drive: "约 15 min",
+            tags: ["温泉", "夜宿"],
+            desc: "第六晚可以住汤田温泉，城市便利度高，也方便第七天往角岛或下关走。",
+            note: "如果想更靠濑户内海，可改住防府。"
+          }
+        ]
+      },
+      {
+        day: "Day 7",
+        short: "角岛到下关",
+        title: "防府、角岛大桥、唐户市场与关门海峡",
+        summary: "最后一天给两个方向：想看海景就走角岛，想少开车就偏防府和下关。",
+        distance: "约 190 km",
+        drive: "约 4 h",
+        overnight: "下关 / 北九州返程",
+        color: "#be185d",
+        stops: [
+          {
+            time: "08:40",
+            name: "汤田温泉出发",
+            place: "Yuda Onsen",
+            lat: 34.1634,
+            lng: 131.4592,
+            stay: "15 min",
+            drive: "出发",
+            tags: ["出发", "选择日"],
+            desc: "最后一天是广度候选日，可以按体力在角岛海景和防府文化线之间取舍。",
+            note: "如果当天有航班或新干线，不建议把所有点都硬塞进去。"
+          },
+          {
+            time: "09:20",
+            name: "防府天满宫",
+            place: "Hofu Tenmangu Shrine",
+            lat: 34.0546,
+            lng: 131.5743,
+            stay: "55 min",
+            drive: "约 35 min",
+            tags: ["神社", "备选"],
+            desc: "防府能给山口段加一条濑户内侧文化线，适合不想绕角岛时保留。",
+            note: "若决定走角岛，这一站可以删掉。"
+          },
+          {
+            time: "11:45",
+            name: "角岛大桥展望点",
+            place: "Tsunoshima Bridge Viewpoint",
+            lat: 34.3529,
+            lng: 130.8855,
+            stay: "45 min",
+            drive: "约 115 min",
+            tags: ["海桥", "拍照"],
+            desc: "角岛大桥是山口自驾的强视觉点，适合做路线预览里的大场面候选。",
+            note: "这段绕路明显，只有天气好、时间足时才值得。"
+          },
+          {
+            time: "12:45",
+            name: "角岛灯塔",
+            place: "Tsunoshima Lighthouse",
+            lat: 34.3847,
+            lng: 130.8494,
+            stay: "60 min",
+            drive: "约 20 min",
+            tags: ["灯塔", "海岛"],
+            desc: "过桥上岛后，可以用灯塔和海边散步补足角岛段的停留感。",
+            note: "旺季车流会慢，别把下关午餐时间卡太死。"
+          },
+          {
+            time: "15:20",
+            name: "唐户市场",
+            place: "Karato Market",
+            lat: 33.9576,
+            lng: 130.9436,
+            stay: "75 min",
+            drive: "约 85 min",
+            tags: ["海鲜", "下关"],
+            desc: "下关的鱼市场和海峡区域适合作为全线收束，也方便连接九州或新干线。",
+            note: "市场热闹时段和营业日要提前确认，晚到可能只适合看海峡。"
+          },
+          {
+            time: "17:05",
+            name: "关门海峡 / 赤间神宫",
+            place: "Kanmon Strait",
+            lat: 33.9607,
+            lng: 130.9587,
+            stay: "55 min",
+            drive: "约 8 min",
+            tags: ["海峡", "终点"],
+            desc: "用关门海峡给路线一个明确终点：从日本海一路开到本州西端。",
+            note: "返程可选下关、新下关、小仓或北九州机场。"
+          }
+        ]
+      }
+    ];
+
+    const PHOTO_GRADIENTS = [
+      "linear-gradient(120deg, rgba(216,105,42,.82), rgba(242,198,109,.78)), radial-gradient(circle at 70% 20%, rgba(255,255,255,.58), transparent 28%)",
+      "linear-gradient(120deg, rgba(31,155,180,.84), rgba(15,139,112,.72)), radial-gradient(circle at 25% 10%, rgba(255,255,255,.55), transparent 26%)",
+      "linear-gradient(120deg, rgba(37,99,235,.78), rgba(138,63,252,.62)), radial-gradient(circle at 78% 16%, rgba(255,255,255,.5), transparent 28%)",
+      "linear-gradient(120deg, rgba(41,50,65,.86), rgba(216,105,42,.65)), radial-gradient(circle at 30% 12%, rgba(255,255,255,.5), transparent 24%)",
+      "linear-gradient(120deg, rgba(194,65,12,.82), rgba(15,139,112,.62)), radial-gradient(circle at 74% 18%, rgba(255,255,255,.5), transparent 26%)",
+      "linear-gradient(120deg, rgba(14,116,144,.82), rgba(242,198,109,.62)), radial-gradient(circle at 26% 14%, rgba(255,255,255,.5), transparent 24%)",
+      "linear-gradient(120deg, rgba(190,24,93,.76), rgba(31,155,180,.7)), radial-gradient(circle at 72% 18%, rgba(255,255,255,.52), transparent 26%)"
+    ];
+
+    const COMMENT_KEY = "sanin-yamaguchi-roadtrip-comments-v1";
+    const VISITOR_KEY = "sanin-yamaguchi-roadtrip-visitor-v1";
+    const SYNC_ENDPOINT = "https://script.google.com/macros/s/AKfycbzFipxrcrVtDg1XMtVA0Cs0oARuNnMlteLeShhlTZtcPzPzea_QA9Wp5-fgjbT7PSd-hg/exec";
+    const SYNC_REFRESH_MS = 45000;
+    const COMMENT_COLORS = ["#22c55e", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6"];
+
+    const initialVisitor = loadVisitor();
+
+    const state = {
+      dayIndex: 0,
+      stopIndex: 0,
+      playing: false,
+      timer: null,
+      mapReady: false,
+      map: null,
+      routeLines: [],
+      progressLine: null,
+      markers: [],
+      movingMarker: null,
+      comments: loadComments(initialVisitor),
+      visitor: initialVisitor,
+      syncStatus: "",
+      editingCommentId: null
+    };
+
+    const els = {
+      dayTabs: document.getElementById("dayTabs"),
+      daySummary: document.getElementById("daySummary"),
+      stopList: document.getElementById("stopList"),
+      detailPanel: document.getElementById("detailPanel"),
+      timelineHead: document.getElementById("timelineHead"),
+      scrubber: document.getElementById("scrubber"),
+      miniStops: document.getElementById("miniStops"),
+      playBtn: document.getElementById("playBtn"),
+      prevBtn: document.getElementById("prevBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      speedSelect: document.getElementById("speedSelect"),
+      mapChip: document.getElementById("mapChip"),
+      mapFallback: document.getElementById("mapFallback"),
+      visitorBtn: document.getElementById("visitorBtn")
+    };
+
+    function initMap() {
+      if (!window.L) {
+        els.mapFallback.hidden = false;
+        return;
+      }
+
+      state.map = L.map("map", {
+        zoomControl: false,
+        scrollWheelZoom: true
+      }).setView([35.37, 133.35], 9);
+
+      L.control.zoom({ position: "bottomright" }).addTo(state.map);
+
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(state.map);
+
+      state.mapReady = true;
+      drawMap();
+    }
+
+    function day() {
+      return ROUTE_DAYS[state.dayIndex];
+    }
+
+    function stop() {
+      return day().stops[state.stopIndex];
+    }
+
+    function stopKey(dayIndex = state.dayIndex, stopIndex = state.stopIndex) {
+      return `${ROUTE_DAYS[dayIndex].day}-${stopIndex}`;
+    }
+
+    function loadComments(visitor) {
+      try {
+        return normalizeLocalComments(JSON.parse(localStorage.getItem(COMMENT_KEY)) || {}, visitor);
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function hashText(value) {
+      let hash = 0;
+      for (let index = 0; index < value.length; index += 1) {
+        hash = ((hash << 5) - hash) + value.charCodeAt(index);
+        hash |= 0;
+      }
+      return Math.abs(hash).toString(36);
+    }
+
+    function normalizeLocalComments(comments, visitor) {
+      Object.entries(comments || {}).forEach(([routeKey, items]) => {
+        comments[routeKey] = (items || []).map(comment => {
+          const stableSeed = `${routeKey}|${comment.createdAt || ""}|${comment.visitorId || ""}|${comment.name || ""}|${comment.color || ""}|${comment.text || ""}`;
+          return {
+            ...comment,
+            id: comment.id || `local-${hashText(stableSeed)}`,
+            visitorId: (!comment.visitorId || comment.visitorId === "legacy-local") ? visitor.id : comment.visitorId,
+            createdAt: comment.createdAt || new Date().toISOString()
+          };
+        });
+      });
+      return comments || {};
+    }
+
+    function createVisitorId() {
+      if (window.crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return `visitor-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function loadVisitor() {
+      try {
+        const visitor = JSON.parse(localStorage.getItem(VISITOR_KEY)) || {};
+        return {
+          id: visitor.id || createVisitorId(),
+          name: visitor.name || ""
+        };
+      } catch (error) {
+        return {
+          id: createVisitorId(),
+          name: ""
+        };
+      }
+    }
+
+    function saveVisitor() {
+      localStorage.setItem(VISITOR_KEY, JSON.stringify(state.visitor));
+      renderVisitor();
+    }
+
+    function renderVisitor() {
+      if (!els.visitorBtn) return;
+      els.visitorBtn.textContent = state.visitor.name ? `访客：${state.visitor.name}` : "访客：设置名字";
+      els.visitorBtn.title = state.visitor.name ? "切换访客名字" : "设置访客名字";
+    }
+
+    function setVisitorName(name) {
+      const nextName = name.trim();
+      if (!nextName) return;
+      state.visitor = {
+        ...state.visitor,
+        name: nextName
+      };
+      saveVisitor();
+    }
+
+    function saveComments() {
+      localStorage.setItem(COMMENT_KEY, JSON.stringify(state.comments));
+    }
+
+    function syncEnabled() {
+      return SYNC_ENDPOINT.trim().startsWith("https://script.google.com/");
+    }
+
+    function commentIdentity(routeKey, comment) {
+      return comment.id || `${routeKey}|${comment.createdAt}|${comment.visitorId || ""}|${comment.name}|${comment.color}|${comment.text}`;
+    }
+
+    function mergeCommentMaps(primary, secondary) {
+      const merged = {};
+      const allKeys = new Set([...Object.keys(primary || {}), ...Object.keys(secondary || {})]);
+      allKeys.forEach(key => {
+        const seen = new Set();
+        merged[key] = [...(primary[key] || []), ...(secondary[key] || [])]
+          .filter(comment => {
+            const id = commentIdentity(key, comment);
+            if (seen.has(id)) return false;
+            seen.add(id);
+            return true;
+          })
+          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      });
+      return merged;
+    }
+
+    function jsonpRequest(params) {
+      return new Promise((resolve, reject) => {
+        if (!syncEnabled()) {
+          reject(new Error("Sync endpoint is not configured."));
+          return;
+        }
+
+        const callbackName = `roadtripSync_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        const script = document.createElement("script");
+        const timeout = window.setTimeout(() => {
+          cleanup();
+          reject(new Error("Google Sheet sync did not respond. Check Apps Script access settings."));
+        }, 12000);
+        const url = new URL(SYNC_ENDPOINT);
+        url.searchParams.set("callback", callbackName);
+        Object.entries(params).forEach(([key, value]) => {
+          url.searchParams.set(key, typeof value === "string" ? value : JSON.stringify(value));
+        });
+
+        const cleanup = () => {
+          window.clearTimeout(timeout);
+          delete window[callbackName];
+          script.remove();
+        };
+
+        window[callbackName] = data => {
+          cleanup();
+          resolve(data);
+        };
+
+        script.onerror = () => {
+          cleanup();
+          reject(new Error("Google Sheet sync request failed."));
+        };
+
+        script.src = url.toString();
+        document.body.appendChild(script);
+      });
+    }
+
+    function normalizeRemoteComments(rows) {
+      const grouped = {};
+      (rows || []).forEach(row => {
+        if (!row.routeKey) return;
+        if (!grouped[row.routeKey]) grouped[row.routeKey] = [];
+        grouped[row.routeKey].push({
+          id: row.id || "",
+          visitorId: row.visitorId || "",
+          name: row.name || "未署名",
+          text: row.text || "已标记",
+          color: row.color || COMMENT_COLORS[0],
+          createdAt: row.createdAt || new Date().toISOString()
+        });
+      });
+      return grouped;
+    }
+
+    function assertSyncResponse(response) {
+      if (response && response.ok === false) {
+        throw new Error(response.error || "Google Sheet sync returned an error.");
+      }
+      return response;
+    }
+
+    function commentsMissingFromRemote(localComments, remoteComments) {
+      const missing = [];
+      Object.entries(localComments || {}).forEach(([routeKey, items]) => {
+        const remoteIds = new Set((remoteComments[routeKey] || []).map(comment => commentIdentity(routeKey, comment)));
+        (items || []).forEach(comment => {
+          if (comment.visitorId === state.visitor.id && !remoteIds.has(commentIdentity(routeKey, comment))) {
+            missing.push({ routeKey, comment });
+          }
+        });
+      });
+      return missing;
+    }
+
+    function ownLocalComments(localComments) {
+      const own = {};
+      Object.entries(localComments || {}).forEach(([routeKey, items]) => {
+        const filtered = (items || []).filter(comment => comment.visitorId === state.visitor.id);
+        if (filtered.length) own[routeKey] = filtered;
+      });
+      return own;
+    }
+
+    function routeInfoFromKey(routeKey) {
+      const match = routeKey.match(/^Day (\d+)-(\d+)$/);
+      const dayIndex = match ? Number(match[1]) - 1 : 0;
+      const stopIndex = match ? Number(match[2]) : 0;
+      const currentDay = ROUTE_DAYS[dayIndex] || ROUTE_DAYS[0];
+      const currentStop = currentDay.stops[stopIndex] || currentDay.stops[0];
+      return { currentDay, stopIndex, currentStop };
+    }
+
+    async function uploadMissingLocalComments(remoteComments) {
+      const missing = commentsMissingFromRemote(state.comments, remoteComments);
+      if (!missing.length) return;
+
+      state.syncStatus = `正在补传 ${missing.length} 条本机记录`;
+      renderDetail();
+
+      for (const item of missing) {
+        const info = routeInfoFromKey(item.routeKey);
+        assertSyncResponse(await jsonpRequest({
+          action: "add",
+          id: item.comment.id,
+          routeKey: item.routeKey,
+          day: info.currentDay.day,
+          dayTitle: info.currentDay.title,
+          stopIndex: info.stopIndex,
+          stopName: info.currentStop.name,
+          visitorId: item.comment.visitorId,
+          name: item.comment.name,
+          color: item.comment.color,
+          text: item.comment.text,
+          createdAt: item.comment.createdAt
+        }));
+      }
+    }
+
+    async function refreshSyncedComments() {
+      if (!syncEnabled()) {
+        state.syncStatus = "本机记录";
+        return;
+      }
+
+      try {
+        const response = await jsonpRequest({ action: "list" });
+        const remote = normalizeRemoteComments(response.rows);
+        await uploadMissingLocalComments(remote);
+        state.comments = mergeCommentMaps(remote, ownLocalComments(state.comments));
+        saveComments();
+        state.syncStatus = "Google Sheet 已同步";
+        render();
+      } catch (error) {
+        state.syncStatus = "同步失败，已保留本机记录";
+        renderDetail();
+      }
+    }
+
+    async function syncComment(routeKey, comment, currentDay, currentStop, item) {
+      if (!syncEnabled()) return;
+
+      try {
+        assertSyncResponse(await jsonpRequest({
+          action: "add",
+          id: comment.id,
+          routeKey,
+          day: currentDay.day,
+          dayTitle: currentDay.title,
+          stopIndex: currentStop,
+          stopName: item.name,
+          visitorId: comment.visitorId,
+          name: comment.name,
+          color: comment.color,
+          text: comment.text,
+          createdAt: comment.createdAt
+        }));
+        state.syncStatus = "Google Sheet 已同步";
+        window.setTimeout(refreshSyncedComments, 900);
+      } catch (error) {
+        state.syncStatus = "同步失败，已保留本机记录";
+        renderDetail();
+      }
+    }
+
+    async function syncCommentChange(action, payload) {
+      if (!syncEnabled()) return;
+
+      try {
+        const response = assertSyncResponse(await jsonpRequest({
+          action,
+          id: payload.comment.id,
+          visitorId: state.visitor.id,
+          routeKey: payload.routeKey,
+          name: payload.comment.name,
+          color: payload.comment.color,
+          text: payload.comment.text,
+          updatedAt: payload.comment.updatedAt || new Date().toISOString()
+        }));
+        if (action === "delete" && response.deleted === false) {
+          throw new Error("remote_comment_not_found");
+        }
+        state.syncStatus = "Google Sheet 已同步";
+        window.setTimeout(refreshSyncedComments, 900);
+      } catch (error) {
+        state.syncStatus = "同步失败，已保留本机记录";
+        renderDetail();
+        throw error;
+      }
+    }
+
+    function canEditComment(comment) {
+      return comment.visitorId === state.visitor.id;
+    }
+
+    function commentsFor(dayIndex = state.dayIndex, stopIndex = state.stopIndex) {
+      return state.comments[stopKey(dayIndex, stopIndex)] || [];
+    }
+
+    function latestComment(dayIndex = state.dayIndex, stopIndex = state.stopIndex) {
+      const items = commentsFor(dayIndex, stopIndex);
+      return items.length ? items[items.length - 1] : null;
+    }
+
+    function colorForStop(dayIndex = state.dayIndex, stopIndex = state.stopIndex) {
+      const item = latestComment(dayIndex, stopIndex);
+      return item ? item.color : null;
+    }
+
+    function updateLocalComment(routeKey, commentId, updater) {
+      state.comments[routeKey] = (state.comments[routeKey] || []).map(comment => {
+        if (comment.id !== commentId || !canEditComment(comment)) return comment;
+        return updater(comment);
+      });
+      saveComments();
+    }
+
+    function removeLocalComment(routeKey, commentId) {
+      state.comments[routeKey] = (state.comments[routeKey] || []).filter(comment => {
+        return comment.id !== commentId || !canEditComment(comment);
+      });
+      saveComments();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatCommentTime(value) {
+      return new Intl.DateTimeFormat("zh-CN", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date(value));
+    }
+
+    function markerIcon(label, active, commentColor) {
+      const fill = active ? (commentColor || day().color) : (commentColor || "var(--road)");
+      return L.divIcon({
+        className: "",
+        html: `<div class="custom-marker${active ? " active" : ""}" style="background:${fill}">${label}</div>`,
+        iconSize: active ? [40, 40] : [30, 30],
+        iconAnchor: active ? [20, 20] : [15, 15]
+      });
+    }
+
+    function movingIcon() {
+      return L.divIcon({
+        className: "",
+        html: '<div class="moving-marker">›</div>',
+        iconSize: [34, 34],
+        iconAnchor: [17, 17]
+      });
+    }
+
+    function drawMap() {
+      if (!state.mapReady) return;
+
+      state.routeLines.forEach(line => line.remove());
+      state.markers.forEach(marker => marker.remove());
+      if (state.progressLine) state.progressLine.remove();
+      if (state.movingMarker) state.movingMarker.remove();
+
+      state.routeLines = [];
+      state.markers = [];
+
+      ROUTE_DAYS.forEach((routeDay, index) => {
+        const coords = routeDay.stops.map(item => [item.lat, item.lng]);
+        const line = L.polyline(coords, {
+          color: routeDay.color,
+          weight: index === state.dayIndex ? 6 : 3,
+          opacity: index === state.dayIndex ? 0.78 : 0.28,
+          dashArray: index === state.dayIndex ? null : "6 10"
+        }).addTo(state.map);
+        state.routeLines.push(line);
+      });
+
+      day().stops.forEach((item, index) => {
+        const commentColor = colorForStop(state.dayIndex, index);
+        const marker = L.marker([item.lat, item.lng], {
+          icon: markerIcon(index + 1, index === state.stopIndex, commentColor),
+          title: item.name
+        }).addTo(state.map);
+
+        marker.on("click", () => {
+          pause();
+          state.stopIndex = index;
+          render();
+        });
+
+        state.markers.push(marker);
+      });
+
+      const coords = progressCoords();
+      state.progressLine = L.polyline(coords, {
+        color: day().color,
+        weight: 8,
+        opacity: 0.92
+      }).addTo(state.map);
+
+      const current = stop();
+      state.movingMarker = L.marker([current.lat, current.lng], {
+        icon: movingIcon(),
+        zIndexOffset: 200
+      }).addTo(state.map);
+
+      const bounds = L.latLngBounds(day().stops.map(item => [item.lat, item.lng]));
+      const isCompact = window.matchMedia("(max-width: 860px)").matches;
+      state.map.fitBounds(bounds, {
+        paddingTopLeft: isCompact ? [28, 28] : [390, 110],
+        paddingBottomRight: isCompact ? [28, 28] : [390, 110],
+        animate: true,
+        duration: 0.6
+      });
+
+      setTimeout(() => {
+        state.map.flyTo([current.lat, current.lng], isCompact ? Math.max(state.map.getZoom(), 8) : Math.max(state.map.getZoom(), 10), {
+          animate: true,
+          duration: 0.8
+        });
+      }, 200);
+    }
+
+    function progressCoords() {
+      return day().stops.slice(0, state.stopIndex + 1).map(item => [item.lat, item.lng]);
+    }
+
+    function renderDayTabs() {
+      els.dayTabs.innerHTML = ROUTE_DAYS.map((item, index) => `
+        <button class="day-tab${index === state.dayIndex ? " active" : ""}" type="button" data-day="${index}">
+          <strong>${item.day}</strong>
+          <span>${item.short}</span>
+        </button>
+      `).join("");
+
+      els.dayTabs.querySelectorAll(".day-tab").forEach(button => {
+        button.addEventListener("click", () => {
+          pause();
+          state.dayIndex = Number(button.dataset.day);
+          state.stopIndex = 0;
+          render();
+        });
+      });
+    }
+
+    function renderSummary() {
+      const currentDay = day();
+      els.daySummary.innerHTML = `
+        <h2>${currentDay.title}</h2>
+        <p>${currentDay.summary}</p>
+        <div class="day-stats">
+          <div class="stat"><span>驾驶</span><strong>${currentDay.drive}</strong></div>
+          <div class="stat"><span>距离</span><strong>${currentDay.distance}</strong></div>
+          <div class="stat"><span>夜宿</span><strong>${currentDay.overnight}</strong></div>
+        </div>
+      `;
+    }
+
+    function renderStopList() {
+      els.stopList.innerHTML = day().stops.map((item, index) => `
+        <button class="stop-item${index === state.stopIndex ? " active" : ""}" type="button" data-stop="${index}" style="${colorForStop(state.dayIndex, index) ? `border-color:${colorForStop(state.dayIndex, index)}; background:rgba(255,255,255,.94);` : ""}">
+          <span class="stop-index" style="background:${colorForStop(state.dayIndex, index) || (index === state.stopIndex ? day().color : "var(--road)")}">${index + 1}</span>
+          <span class="stop-main">
+            <span class="stop-topline">
+              <span class="stop-time">${item.time}</span>
+              <span class="stop-name">${item.name}</span>
+            </span>
+            <span class="stop-sub">${item.drive} · ${item.stay}</span>
+          </span>
+        </button>
+      `).join("");
+
+      els.stopList.querySelectorAll(".stop-item").forEach(button => {
+        button.addEventListener("click", () => {
+          pause();
+          state.stopIndex = Number(button.dataset.stop);
+          render();
+        });
+      });
+
+      const active = els.stopList.querySelector(".stop-item.active");
+      if (active) active.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+
+    function renderDetail() {
+      const item = stop();
+      const tags = item.tags.map(tag => `<span>${tag}</span>`).join("");
+      const currentComments = commentsFor();
+      const editingComment = state.editingCommentId ? currentComments.find(comment => comment.id === state.editingCommentId && canEditComment(comment)) : null;
+      const currentColor = colorForStop() || day().color;
+      const commentItems = currentComments.length
+        ? currentComments.slice().reverse().map(comment => {
+          const actions = canEditComment(comment) ? `
+            <div class="comment-actions">
+              <button class="comment-action" type="button" data-edit-comment="${escapeHtml(comment.id)}">修改</button>
+              <button class="comment-action danger" type="button" data-delete-comment="${escapeHtml(comment.id)}">删除</button>
+            </div>
+          ` : "";
+          return `
+          <div class="comment-item" style="--comment-color:${comment.color}">
+            <div class="comment-meta">
+              <strong>${escapeHtml(comment.name)}</strong>
+              <span>${formatCommentTime(comment.createdAt)}</span>
+            </div>
+            <p>${escapeHtml(comment.text)}</p>
+            ${actions}
+          </div>
+        `;
+        }).join("")
+        : `<div class="comment-empty">还没有标记。选个颜色，留下名字和一句话就行。</div>`;
+      const selectedColor = editingComment ? editingComment.color : COMMENT_COLORS[0];
+      const colorOptions = COMMENT_COLORS.map(color => `
+        <label title="标记颜色">
+          <input type="radio" name="commentColor" value="${color}" ${color === selectedColor ? "checked" : ""}>
+          <span class="color-dot" style="--comment-color:${color}"></span>
+        </label>
+      `).join("");
+      els.detailPanel.innerHTML = `
+        <div class="photo-strip" style="--photo:${PHOTO_GRADIENTS[state.dayIndex]}">
+          <div class="photo-label">
+            <strong>${item.name}</strong>
+            <span>${item.time}</span>
+          </div>
+        </div>
+        <div class="detail-body">
+          <div class="detail-meta">
+            <span>${item.place}</span>
+            <span>${item.drive}</span>
+            <span>${item.stay}</span>
+            ${tags}
+          </div>
+          <p>${item.desc}</p>
+          <div class="note" style="border-left-color:${currentColor}">${item.note}</div>
+          <div class="comment-panel">
+            <div class="comment-head">
+              <strong>标记记录</strong>
+              <span class="sync-status${syncEnabled() ? " online" : ""}">${state.syncStatus || (syncEnabled() ? "Google Sheet" : "本机记录")}</span>
+              <span class="comment-count">${currentComments.length} 条</span>
+            </div>
+            <form id="commentForm" class="comment-form">
+              <div class="comment-row">
+                <input id="commentName" class="comment-input" type="text" maxlength="18" placeholder="名字，填一次会记住" value="${escapeHtml(editingComment ? editingComment.name : state.visitor.name)}">
+                <div class="color-options">${colorOptions}</div>
+              </div>
+              <textarea id="commentText" class="comment-text" maxlength="80" placeholder="备注：必去 / 可删 / 备选 / 想住这里">${escapeHtml(editingComment ? editingComment.text : "")}</textarea>
+              <button class="comment-submit" type="submit">${editingComment ? "保存修改" : "记录这个点"}</button>
+              ${editingComment ? `<button id="cancelEditBtn" class="comment-cancel" type="button">取消修改</button>` : ""}
+            </form>
+            <div class="comment-list">${commentItems}</div>
+          </div>
+        </div>
+      `;
+
+      els.mapChip.innerHTML = `<strong>${day().day} · ${item.name}</strong><span>${item.time} / ${item.drive}</span>`;
+      const form = document.getElementById("commentForm");
+      if (form) form.addEventListener("submit", addComment);
+      const cancelEditBtn = document.getElementById("cancelEditBtn");
+      if (cancelEditBtn) {
+        cancelEditBtn.addEventListener("click", () => {
+          state.editingCommentId = null;
+          renderDetail();
+        });
+      }
+      document.querySelectorAll("[data-edit-comment]").forEach(button => {
+        button.addEventListener("click", () => editComment(button.dataset.editComment));
+      });
+      document.querySelectorAll("[data-delete-comment]").forEach(button => {
+        button.addEventListener("click", () => deleteComment(button.dataset.deleteComment));
+      });
+    }
+
+    function renderTimeline() {
+      const currentDay = day();
+      const currentStop = stop();
+      els.scrubber.max = currentDay.stops.length - 1;
+      els.scrubber.value = state.stopIndex;
+      els.timelineHead.innerHTML = `
+        <strong>${currentStop.name}</strong>
+        <span>${state.stopIndex + 1} / ${currentDay.stops.length} · ${currentDay.title}</span>
+      `;
+      els.miniStops.style.setProperty("--count", currentDay.stops.length);
+      els.miniStops.innerHTML = currentDay.stops.map((_, index) => {
+        const className = index === state.stopIndex ? "mini-stop active" : index < state.stopIndex ? "mini-stop done" : "mini-stop";
+        return `<span class="${className}"></span>`;
+      }).join("");
+      els.playBtn.textContent = state.playing ? "Ⅱ" : "▶";
+      els.playBtn.setAttribute("aria-label", state.playing ? "暂停路线" : "播放路线");
+      els.playBtn.setAttribute("title", state.playing ? "暂停路线" : "播放路线");
+    }
+
+    function render() {
+      renderVisitor();
+      renderDayTabs();
+      renderSummary();
+      renderStopList();
+      renderDetail();
+      renderTimeline();
+      drawMap();
+    }
+
+    async function addComment(event) {
+      event.preventDefault();
+      const nameInput = document.getElementById("commentName");
+      const textInput = document.getElementById("commentText");
+      const colorInput = document.querySelector('input[name="commentColor"]:checked');
+      const typedName = nameInput.value.trim();
+      if (typedName) {
+        setVisitorName(typedName);
+      }
+      const name = state.visitor.name || "未署名";
+      const text = textInput.value.trim() || "已标记";
+      const key = stopKey();
+      const currentDay = day();
+      const currentStop = state.stopIndex;
+      const currentItem = stop();
+
+      if (state.editingCommentId) {
+        await saveEditedComment({
+          key,
+          id: state.editingCommentId,
+          name,
+          text,
+          color: colorInput ? colorInput.value : COMMENT_COLORS[0]
+        });
+        return;
+      }
+
+      const nextComment = {
+        id: `${state.visitor.id}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        visitorId: state.visitor.id,
+        name,
+        text,
+        color: colorInput ? colorInput.value : COMMENT_COLORS[0],
+        createdAt: new Date().toISOString()
+      };
+
+      state.comments[key] = [...commentsFor(), nextComment];
+      saveComments();
+      render();
+      syncComment(key, nextComment, currentDay, currentStop, currentItem);
+    }
+
+    async function saveEditedComment({ key, id, name, text, color }) {
+      const comment = findCurrentComment(id);
+      if (!comment) return;
+
+      const updatedComment = {
+        ...comment,
+        name,
+        text,
+        color,
+        updatedAt: new Date().toISOString()
+      };
+
+      updateLocalComment(key, id, () => updatedComment);
+      state.editingCommentId = null;
+      saveComments();
+      render();
+
+      try {
+        await syncCommentChange("update", { routeKey: key, comment: updatedComment });
+      } catch (error) {
+        state.syncStatus = "修改已保存在本机，远端同步失败";
+        renderDetail();
+      }
+    }
+
+    function findCurrentComment(commentId) {
+      return commentsFor().find(comment => comment.id === commentId && canEditComment(comment));
+    }
+
+    function editComment(commentId) {
+      const comment = findCurrentComment(commentId);
+      if (!comment) return;
+      state.editingCommentId = commentId;
+      renderDetail();
+    }
+
+    async function deleteComment(commentId) {
+      const key = stopKey();
+      const comment = findCurrentComment(commentId);
+      if (!comment) return;
+      const ok = window.confirm("删除这条标记记录？");
+      if (!ok) return;
+
+      try {
+        if (syncEnabled()) {
+          state.syncStatus = "正在删除远端记录";
+          renderDetail();
+          await syncCommentChange("delete", { routeKey: key, comment });
+        }
+        removeLocalComment(key, commentId);
+        state.editingCommentId = null;
+        render();
+      } catch (error) {
+        if (error.message === "remote_comment_not_found") {
+          removeLocalComment(key, commentId);
+          state.editingCommentId = null;
+          state.syncStatus = "远端未找到，本机已删除";
+          render();
+          return;
+        }
+        state.syncStatus = "删除失败：远端记录未删除";
+        renderDetail();
+      }
+    }
+
+    function goNext() {
+      const lastStop = day().stops.length - 1;
+      if (state.stopIndex < lastStop) {
+        state.stopIndex += 1;
+      } else if (state.dayIndex < ROUTE_DAYS.length - 1) {
+        state.dayIndex += 1;
+        state.stopIndex = 0;
+      } else {
+        pause();
+        return;
+      }
+      render();
+    }
+
+    function goPrev() {
+      if (state.stopIndex > 0) {
+        state.stopIndex -= 1;
+      } else if (state.dayIndex > 0) {
+        state.dayIndex -= 1;
+        state.stopIndex = ROUTE_DAYS[state.dayIndex].stops.length - 1;
+      }
+      render();
+    }
+
+    function play() {
+      pause(false);
+      state.playing = true;
+      renderTimeline();
+      state.timer = window.setInterval(goNext, Number(els.speedSelect.value));
+    }
+
+    function pause(update = true) {
+      state.playing = false;
+      if (state.timer) {
+        window.clearInterval(state.timer);
+        state.timer = null;
+      }
+      if (update) renderTimeline();
+    }
+
+    els.playBtn.addEventListener("click", () => {
+      if (state.playing) {
+        pause();
+      } else {
+        play();
+      }
+    });
+
+    els.prevBtn.addEventListener("click", () => {
+      pause();
+      goPrev();
+    });
+
+    els.nextBtn.addEventListener("click", () => {
+      pause();
+      goNext();
+    });
+
+    els.resetBtn.addEventListener("click", () => {
+      pause();
+      state.dayIndex = 0;
+      state.stopIndex = 0;
+      render();
+    });
+
+    els.scrubber.addEventListener("input", event => {
+      pause();
+      state.stopIndex = Number(event.target.value);
+      render();
+    });
+
+    els.speedSelect.addEventListener("change", () => {
+      if (state.playing) play();
+    });
+
+    els.visitorBtn.addEventListener("click", () => {
+      const nextName = window.prompt("输入这台浏览器要记住的名字", state.visitor.name || "");
+      if (nextName !== null) {
+        setVisitorName(nextName);
+        renderDetail();
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      if (state.mapReady) {
+        state.map.invalidateSize();
+      }
+    });
+
+    render();
+    initMap();
+    refreshSyncedComments();
+    if (syncEnabled()) {
+      window.setInterval(refreshSyncedComments, SYNC_REFRESH_MS);
+    }
+  </script>
+</body>
+</html>
