@@ -367,6 +367,15 @@
       font-weight: 800;
     }
 
+    .map-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .map-link:hover {
+      text-decoration: underline;
+    }
+
     .stop-sub {
       margin: 4px 0 0;
       color: var(--muted);
@@ -459,6 +468,10 @@
       font-size: 22px;
       line-height: 1.15;
       text-shadow: 0 2px 12px rgba(0, 0, 0, 0.32);
+    }
+
+    .photo-label .map-link {
+      color: #fff;
     }
 
     .photo-label span {
@@ -2170,6 +2183,11 @@
         .replace(/'/g, "&#039;");
     }
 
+    function googleMapsUrl(item) {
+      const query = encodeURIComponent(`${item.place || item.name} ${item.lat},${item.lng}`);
+      return `https://www.google.com/maps/search/?api=1&query=${query}`;
+    }
+
     function formatCommentTime(value) {
       return new Intl.DateTimeFormat("zh-CN", {
         month: "2-digit",
@@ -2333,6 +2351,7 @@
       const currentComments = commentsFor();
       const editingComment = state.editingCommentId ? currentComments.find(comment => comment.id === state.editingCommentId && canEditComment(comment)) : null;
       const currentColor = colorForStop() || day().color;
+      const mapsUrl = googleMapsUrl(item);
       const commentItems = currentComments.length
         ? currentComments.slice().reverse().map(comment => {
           const actions = canEditComment(comment) ? `
@@ -2363,13 +2382,13 @@
       els.detailPanel.innerHTML = `
         <div class="photo-strip" style="--photo:${PHOTO_GRADIENTS[state.dayIndex]}">
           <div class="photo-label">
-            <strong>${item.name}</strong>
+            <strong><a class="map-link" href="${mapsUrl}" target="_blank" rel="noopener noreferrer" title="在 Google Maps 打开">${item.name}</a></strong>
             <span>${item.time}</span>
           </div>
         </div>
         <div class="detail-body">
           <div class="detail-meta">
-            <span>${item.place}</span>
+            <span><a class="map-link" href="${mapsUrl}" target="_blank" rel="noopener noreferrer" title="在 Google Maps 打开">${item.place}</a></span>
             <span>${item.drive}</span>
             <span>${item.stay}</span>
             ${tags}
