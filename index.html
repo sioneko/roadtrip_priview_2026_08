@@ -1699,6 +1699,7 @@
     const { routeDays: ROUTE_DAYS, photoGradients: PHOTO_GRADIENTS } = window.TRIP_DATA;
     const COMMENT_KEY = "sanin-yamaguchi-roadtrip-comments-v1";
     const ANNOTATION_KEY = "sanin-yamaguchi-roadtrip-annotations-v1";
+    const ANNOTATION_ROUTE_KEY = "__annotation__";
     const VISITOR_KEY = "sanin-yamaguchi-roadtrip-visitor-v1";
     const SYNC_ENDPOINT = "https://script.google.com/macros/s/AKfycbzFipxrcrVtDg1XMtVA0Cs0oARuNnMlteLeShhlTZtcPzPzea_QA9Wp5-fgjbT7PSd-hg/exec";
     const SYNC_REFRESH_MS = 45000;
@@ -2008,6 +2009,7 @@
       const grouped = {};
       (rows || []).forEach(row => {
         if (!row.routeKey) return;
+        if (row.routeKey === ANNOTATION_ROUTE_KEY) return;
         if (!grouped[row.routeKey]) grouped[row.routeKey] = [];
         grouped[row.routeKey].push({
           id: row.id || "",
@@ -2022,7 +2024,34 @@
     }
 
     function normalizeRemoteAnnotations(rows) {
-      return normalizeAnnotations((rows || []).filter(row => row.id), state.visitor);
+      const items = (rows || [])
+        .filter(row => row.id && row.routeKey === ANNOTATION_ROUTE_KEY)
+        .map(row => {
+          let position = {};
+          try {
+            position = JSON.parse(row.stopName || "{}");
+          } catch (error) {
+            position = {};
+          }
+
+          return {
+            id: row.id || "",
+            visitorId: row.visitorId || "",
+            name: row.name || "未署名",
+            text: row.text || "已标记",
+            color: row.color || COMMENT_COLORS[0],
+            target: row.dayTitle || "ui",
+            page: row.day || "route",
+            mapId: row.stopIndex || "route",
+            x: position.x === undefined ? "" : position.x,
+            y: position.y === undefined ? "" : position.y,
+            lat: position.lat === undefined ? "" : position.lat,
+            lng: position.lng === undefined ? "" : position.lng,
+            createdAt: row.createdAt || new Date().toISOString(),
+            updatedAt: row.updatedAt || ""
+          };
+        });
+      return normalizeAnnotations(items, state.visitor);
     }
 
     function assertSyncResponse(response) {
@@ -2139,24 +2168,32 @@
     async function syncAnnotation(action, item) {
       if (!syncEnabled()) return;
 
-      const response = await jsonpRequest({
-        action,
-        id: item.id,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt || "",
-        visitorId: item.visitorId,
-        name: item.name,
-        color: item.color,
-        text: item.text,
-        target: item.target,
-        page: item.page,
-        mapId: item.mapId,
+      const actionMap = {
+        addAnnotation: "add",
+        updateAnnotation: "update",
+        deleteAnnotation: "delete"
+      };
+      const position = JSON.stringify({
         x: item.x,
         y: item.y,
         lat: item.lat,
         lng: item.lng
       });
-      if (!response || response.kind !== "annotations") throw new Error("annotations_not_supported");
+      const response = await jsonpRequest({
+        action: actionMap[action] || action,
+        id: item.id,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt || "",
+        visitorId: item.visitorId,
+        routeKey: ANNOTATION_ROUTE_KEY,
+        day: item.page,
+        dayTitle: item.target,
+        stopIndex: item.mapId,
+        stopName: position,
+        name: item.name,
+        color: item.color,
+        text: item.text
+      });
       assertSyncResponse(response);
       annotationState.syncStatus = "Google Sheet 已同步";
     }
@@ -2177,8 +2214,7 @@
       }
 
       try {
-        const response = await jsonpRequest({ action: "listAnnotations" });
-        if (!response || response.kind !== "annotations") throw new Error("annotations_not_supported");
+        const response = await jsonpRequest({ action: "list" });
         const remote = normalizeRemoteAnnotations(response.rows);
         await uploadMissingLocalAnnotations(remote);
         annotationState.items = mergeAnnotations(remote, ownLocalAnnotations(annotationState.items));

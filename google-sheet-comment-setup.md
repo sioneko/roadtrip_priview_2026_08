@@ -22,9 +22,6 @@ const SYNC_ENDPOINT = "你的 Web App URL";
 
 完成后，地点评论和气泡批注会同时保存在浏览器本地和你的 Google Sheet。其他人打开同一个 HTML 链接时，也能读取同一批记录。
 
-当前脚本会自动维护两个工作表：
-
-- `comments`：地点评论
-- `annotations`：页面 / 地图气泡批注
+当前页面会把地点评论和气泡批注都写入 `comments` 工作表。气泡行的 `routeKey` 会显示为 `__annotation__`，方便和普通地点评论区分。
 
 如果之后修改了 `google-sheet-comment-webapp.gs`，需要在 Apps Script 里进入 `部署` -> `管理部署`，编辑 Web App 部署并选择新版本，然后点更新。
