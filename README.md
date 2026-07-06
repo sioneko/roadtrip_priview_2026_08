@@ -14,6 +14,7 @@ The site entry file is `index.html`.
 
 ## Structure
 
-- `index.html`: animated route preview, comments, and `#places` all-place pin view
-- `trip-data.js`: shared trip data
+- `index.html`: animated route preview and comments
+- `map.html`: all-place pin map
+- `trip-data.js`: shared trip data used by both pages
 - `google-sheet-comment-webapp.gs`: Apps Script backend for comment sync
