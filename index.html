@@ -124,7 +124,9 @@
     .topbar,
     .side-panel,
     .detail-panel,
-    .player {
+    .player,
+    .places-panel,
+    .places-card {
       pointer-events: auto;
       border: 1px solid rgba(216, 224, 231, 0.88);
       background: var(--panel);
@@ -181,6 +183,13 @@
       background: rgba(255, 255, 255, 0.7);
       font-size: 13px;
       white-space: nowrap;
+    }
+
+    .view-pill.active {
+      color: #0b3f6f;
+      border-color: rgba(37, 99, 235, 0.28);
+      background: var(--blue-soft);
+      font-weight: 800;
     }
 
     button.meta-pill {
@@ -738,6 +747,184 @@
       border-radius: var(--radius);
     }
 
+    .places-panel {
+      grid-column: 1;
+      grid-row: 2 / 4;
+      align-self: stretch;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--radius);
+    }
+
+    .places-head {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .places-head h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .places-head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .places-filter {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      scrollbar-width: thin;
+    }
+
+    .place-filter {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #40505d;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .place-filter.active {
+      color: #fff;
+      border-color: var(--day-color, var(--blue));
+      background: var(--day-color, var(--blue));
+    }
+
+    .places-list {
+      min-height: 0;
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .place-item {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr);
+      gap: 9px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      color: inherit;
+      background: transparent;
+      text-align: left;
+    }
+
+    .place-item + .place-item {
+      margin-top: 5px;
+    }
+
+    .place-item:hover,
+    .place-item.active {
+      border-color: rgba(37, 99, 235, 0.26);
+      background: rgba(232, 240, 255, 0.92);
+    }
+
+    .place-index {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--day-color, var(--road));
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .place-name {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .place-sub {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .places-card {
+      grid-column: 3;
+      grid-row: 2;
+      align-self: end;
+      justify-self: stretch;
+      overflow: hidden;
+      border-radius: var(--radius);
+    }
+
+    .places-card[hidden] {
+      display: none;
+    }
+
+    .places-band {
+      min-height: 8px;
+      background: var(--day-color, var(--blue));
+    }
+
+    .places-card-body {
+      padding: 14px;
+    }
+
+    .places-card-body h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .places-card-body p {
+      margin: 10px 0;
+      color: #33414d;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .places-meta,
+    .places-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .places-meta span,
+    .places-actions a,
+    .places-actions button {
+      min-height: 30px;
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #354551;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .places-actions a {
+      color: #0b3f6f;
+      border-color: rgba(37, 99, 235, 0.28);
+      background: var(--blue-soft);
+    }
+
     .controls {
       display: flex;
       align-items: center;
@@ -896,6 +1083,13 @@
         justify-self: end;
       }
 
+      .places-card {
+        grid-column: 2;
+        grid-row: 2;
+        max-width: 360px;
+        justify-self: end;
+      }
+
       .map-chip {
         max-width: min(480px, calc(100vw - 430px));
       }
@@ -986,6 +1180,10 @@
         max-height: none;
       }
 
+      .places-panel {
+        max-height: none;
+      }
+
       .day-tab {
         flex-basis: 96px;
         min-height: 46px;
@@ -1017,7 +1215,17 @@
         padding: 8px;
       }
 
+      .places-list {
+        max-height: 42dvh;
+        padding: 8px;
+      }
+
       .stop-item {
+        grid-template-columns: 36px minmax(0, 1fr);
+        padding: 8px;
+      }
+
+      .place-item {
         grid-template-columns: 36px minmax(0, 1fr);
         padding: 8px;
       }
@@ -1031,6 +1239,14 @@
       .detail-panel {
         max-width: none;
         width: 100%;
+        align-self: stretch;
+      }
+
+      .places-card {
+        position: relative;
+        order: 4;
+        width: 100%;
+        max-width: none;
         align-self: stretch;
       }
 
@@ -1143,12 +1359,13 @@
           <span class="meta-pill">7 天候选</span>
           <span class="meta-pill">约 900 km+</span>
           <span class="meta-pill">鸟取进 / 下关或山口出</span>
-          <a class="meta-pill" href="./map.html">全地点地图</a>
+          <a id="routeViewLink" class="meta-pill view-pill active" href="#route">路线预览</a>
+          <a id="placesViewLink" class="meta-pill view-pill" href="#places">全地点地图</a>
           <button id="visitorBtn" class="meta-pill visitor-pill" type="button">访客：设置名字</button>
         </div>
       </header>
 
-      <aside class="side-panel">
+      <aside id="routePanel" class="side-panel">
         <nav id="dayTabs" class="day-tabs" aria-label="选择行程天数"></nav>
         <div id="daySummary" class="day-summary"></div>
         <div id="stopList" class="stop-list"></div>
@@ -1156,7 +1373,19 @@
 
       <article id="detailPanel" class="detail-panel" aria-live="polite"></article>
 
-      <footer class="player">
+      <aside id="placesPanel" class="places-panel" hidden>
+        <header class="places-head">
+          <p class="eyebrow">All Places Map</p>
+          <h2>全地点地图</h2>
+          <p id="placesIntro"></p>
+        </header>
+        <nav id="placesFilter" class="places-filter" aria-label="按天筛选地点"></nav>
+        <div id="placesList" class="places-list"></div>
+      </aside>
+
+      <article id="placesCard" class="places-card" aria-live="polite" hidden></article>
+
+      <footer id="routePlayer" class="player">
         <div class="controls" aria-label="路线播放控制">
           <button id="prevBtn" class="icon-btn" type="button" title="上一个停靠点" aria-label="上一个停靠点">‹</button>
           <button id="playBtn" class="icon-btn primary" type="button" title="播放路线" aria-label="播放路线">▶</button>
@@ -1190,12 +1419,16 @@
     const SYNC_ENDPOINT = "https://script.google.com/macros/s/AKfycbzFipxrcrVtDg1XMtVA0Cs0oARuNnMlteLeShhlTZtcPzPzea_QA9Wp5-fgjbT7PSd-hg/exec";
     const SYNC_REFRESH_MS = 45000;
     const COMMENT_COLORS = ["#22c55e", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6"];
+    const initialRouteTarget = routeTargetFromHash();
 
     const initialVisitor = loadVisitor();
 
     const state = {
-      dayIndex: 0,
-      stopIndex: 0,
+      view: location.hash === "#places" ? "places" : "route",
+      dayIndex: initialRouteTarget ? initialRouteTarget.dayIndex : 0,
+      stopIndex: initialRouteTarget ? initialRouteTarget.stopIndex : 0,
+      placeDay: "all",
+      placeKey: "",
       playing: false,
       timer: null,
       mapReady: false,
@@ -1211,10 +1444,19 @@
     };
 
     const els = {
+      routePanel: document.getElementById("routePanel"),
+      routePlayer: document.getElementById("routePlayer"),
+      routeViewLink: document.getElementById("routeViewLink"),
+      placesViewLink: document.getElementById("placesViewLink"),
       dayTabs: document.getElementById("dayTabs"),
       daySummary: document.getElementById("daySummary"),
       stopList: document.getElementById("stopList"),
       detailPanel: document.getElementById("detailPanel"),
+      placesPanel: document.getElementById("placesPanel"),
+      placesIntro: document.getElementById("placesIntro"),
+      placesFilter: document.getElementById("placesFilter"),
+      placesList: document.getElementById("placesList"),
+      placesCard: document.getElementById("placesCard"),
       timelineHead: document.getElementById("timelineHead"),
       scrubber: document.getElementById("scrubber"),
       miniStops: document.getElementById("miniStops"),
@@ -1227,6 +1469,15 @@
       mapFallback: document.getElementById("mapFallback"),
       visitorBtn: document.getElementById("visitorBtn")
     };
+
+    function routeTargetFromHash() {
+      const match = location.hash.match(/^#route-(\d+)-(\d+)$/);
+      if (!match) return null;
+      const dayIndex = Number(match[1]);
+      const stopIndex = Number(match[2]);
+      if (!ROUTE_DAYS[dayIndex] || !ROUTE_DAYS[dayIndex].stops[stopIndex]) return null;
+      return { dayIndex, stopIndex };
+    }
 
     function initMap() {
       if (!window.L) {
@@ -1260,6 +1511,28 @@
 
     function stopKey(dayIndex = state.dayIndex, stopIndex = state.stopIndex) {
       return `${ROUTE_DAYS[dayIndex].day}-${stopIndex}`;
+    }
+
+    function allStops() {
+      return ROUTE_DAYS.flatMap((routeDay, dayIndex) => {
+        return routeDay.stops.map((item, stopIndex) => ({
+          ...item,
+          key: stopKey(dayIndex, stopIndex),
+          routeDay,
+          dayIndex,
+          stopIndex
+        }));
+      });
+    }
+
+    function visiblePlaces() {
+      const stops = allStops();
+      if (state.placeDay === "all") return stops;
+      return stops.filter(item => item.dayIndex === Number(state.placeDay));
+    }
+
+    function currentPlace() {
+      return allStops().find(item => item.key === state.placeKey);
     }
 
     function loadComments(visitor) {
@@ -1634,9 +1907,7 @@
       });
     }
 
-    function drawMap() {
-      if (!state.mapReady) return;
-
+    function clearMapLayers() {
       state.routeLines.forEach(line => line.remove());
       state.markers.forEach(marker => marker.remove());
       if (state.progressLine) state.progressLine.remove();
@@ -1644,6 +1915,21 @@
 
       state.routeLines = [];
       state.markers = [];
+      state.progressLine = null;
+      state.movingMarker = null;
+    }
+
+    function drawMap() {
+      if (!state.mapReady) return;
+      if (state.view === "places") {
+        drawPlacesMap();
+        return;
+      }
+      drawRouteMap();
+    }
+
+    function drawRouteMap() {
+      clearMapLayers();
 
       ROUTE_DAYS.forEach((routeDay, index) => {
         const coords = routeDay.stops.map(item => [item.lat, item.lng]);
@@ -1700,6 +1986,52 @@
           duration: 0.8
         });
       }, 200);
+    }
+
+    function drawPlacesMap() {
+      clearMapLayers();
+
+      ROUTE_DAYS.forEach(routeDay => {
+        const coords = routeDay.stops.map(item => [item.lat, item.lng]);
+        const line = L.polyline(coords, {
+          color: routeDay.color,
+          weight: 3,
+          opacity: 0.28,
+          dashArray: "6 10"
+        }).addTo(state.map);
+        state.routeLines.push(line);
+      });
+
+      const stops = visiblePlaces();
+      stops.forEach(item => {
+        const marker = L.marker([item.lat, item.lng], {
+          icon: markerIcon(item.stopIndex + 1, state.placeKey === item.key, item.routeDay.color),
+          title: item.name
+        }).addTo(state.map);
+
+        marker.on("click", () => selectPlace(item.key));
+        state.markers.push(marker);
+      });
+
+      const selected = currentPlace();
+      if (selected) {
+        state.map.flyTo([selected.lat, selected.lng], Math.max(state.map.getZoom(), 10), {
+          animate: true,
+          duration: 0.6
+        });
+        return;
+      }
+
+      if (stops.length) {
+        const bounds = L.latLngBounds(stops.map(item => [item.lat, item.lng]));
+        const isCompact = window.matchMedia("(max-width: 860px)").matches;
+        state.map.fitBounds(bounds, {
+          paddingTopLeft: isCompact ? [28, 28] : [390, 110],
+          paddingBottomRight: isCompact ? [28, 28] : [390, 110],
+          animate: true,
+          duration: 0.6
+        });
+      }
     }
 
     function progressCoords() {
@@ -1870,14 +2202,167 @@
       els.playBtn.setAttribute("title", state.playing ? "暂停路线" : "播放路线");
     }
 
+    function renderPlacesFilters() {
+      const filters = [
+        `<button class="place-filter${state.placeDay === "all" ? " active" : ""}" type="button" data-place-day="all">全部</button>`,
+        ...ROUTE_DAYS.map((routeDay, index) => {
+          const active = state.placeDay === String(index);
+          return `<button class="place-filter${active ? " active" : ""}" style="--day-color:${routeDay.color}" type="button" data-place-day="${index}">${routeDay.day}</button>`;
+        })
+      ];
+
+      els.placesFilter.innerHTML = filters.join("");
+      els.placesFilter.querySelectorAll("[data-place-day]").forEach(button => {
+        button.addEventListener("click", () => {
+          state.placeDay = button.dataset.placeDay;
+          state.placeKey = "";
+          render();
+        });
+      });
+    }
+
+    function renderPlacesList() {
+      const stops = visiblePlaces();
+      const countText = state.placeDay === "all" ? `${stops.length} 个候选地点` : `${ROUTE_DAYS[Number(state.placeDay)].day} · ${stops.length} 个地点`;
+      els.placesIntro.textContent = `${countText}，点击地点或地图 pin 查看详情。`;
+      els.placesList.innerHTML = stops.map(item => `
+        <button class="place-item${state.placeKey === item.key ? " active" : ""}" type="button" data-place-key="${item.key}">
+          <span class="place-index" style="--day-color:${item.routeDay.color}">${item.stopIndex + 1}</span>
+          <span>
+            <span class="place-name">${escapeHtml(item.name)}</span>
+            <span class="place-sub">${item.routeDay.day} · ${item.time} · ${escapeHtml(item.place)}</span>
+          </span>
+        </button>
+      `).join("");
+
+      els.placesList.querySelectorAll("[data-place-key]").forEach(button => {
+        button.addEventListener("click", () => selectPlace(button.dataset.placeKey));
+      });
+
+      const active = els.placesList.querySelector(".place-item.active");
+      if (active) active.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+
+    function renderPlacesCard() {
+      const item = currentPlace();
+      if (!item) {
+        els.placesCard.hidden = true;
+        els.mapChip.innerHTML = `<strong>全地点地图</strong><span>${visiblePlaces().length} 个候选地点</span>`;
+        return;
+      }
+
+      els.mapChip.innerHTML = `<strong>${item.routeDay.day} · ${escapeHtml(item.name)}</strong><span>${item.time} / ${item.drive}</span>`;
+      els.placesCard.hidden = false;
+      els.placesCard.innerHTML = `
+        <div class="places-band" style="--day-color:${item.routeDay.color}"></div>
+        <div class="places-card-body">
+          <h2>${escapeHtml(item.name)}</h2>
+          <div class="places-meta">
+            <span>${item.routeDay.day}</span>
+            <span>${item.time}</span>
+            <span>${item.drive}</span>
+            <span>${item.stay}</span>
+          </div>
+          <p>${escapeHtml(item.desc)}</p>
+          <div class="places-actions">
+            <a href="${googleMapsUrl(item)}" target="_blank" rel="noopener noreferrer">Google Maps</a>
+            <a href="#route-${item.dayIndex}-${item.stopIndex}" data-open-route="${item.key}">在路线里看</a>
+            <button type="button" data-close-place>关闭</button>
+          </div>
+        </div>
+      `;
+
+      const routeButton = els.placesCard.querySelector("[data-open-route]");
+      if (routeButton) {
+        routeButton.addEventListener("click", () => {
+          openRouteStop(item.dayIndex, item.stopIndex);
+        });
+      }
+
+      const closeButton = els.placesCard.querySelector("[data-close-place]");
+      if (closeButton) {
+        closeButton.addEventListener("click", () => {
+          state.placeKey = "";
+          render();
+        });
+      }
+    }
+
+    function renderPlaces() {
+      renderPlacesFilters();
+      renderPlacesList();
+      renderPlacesCard();
+    }
+
+    function renderViewChrome() {
+      const isPlaces = state.view === "places";
+      document.body.dataset.view = state.view;
+      els.routePanel.hidden = isPlaces;
+      els.detailPanel.hidden = isPlaces;
+      els.routePlayer.hidden = isPlaces;
+      els.placesPanel.hidden = !isPlaces;
+      els.routeViewLink.classList.toggle("active", !isPlaces);
+      els.placesViewLink.classList.toggle("active", isPlaces);
+      if (!isPlaces) {
+        els.placesCard.hidden = true;
+      }
+    }
+
     function render() {
       renderVisitor();
+      renderViewChrome();
+      if (state.view === "places") {
+        renderPlaces();
+        drawMap();
+        return;
+      }
       renderDayTabs();
       renderSummary();
       renderStopList();
       renderDetail();
       renderTimeline();
       drawMap();
+    }
+
+    function selectPlace(key) {
+      const item = allStops().find(stopItem => stopItem.key === key);
+      if (!item) return;
+      pause();
+      state.placeKey = key;
+      render();
+    }
+
+    function openRouteStop(dayIndex, stopIndex) {
+      pause();
+      state.dayIndex = dayIndex;
+      state.stopIndex = stopIndex;
+      state.view = "route";
+      const nextHash = `#route-${dayIndex}-${stopIndex}`;
+      if (location.hash !== nextHash) {
+        location.hash = nextHash;
+      }
+      render();
+      if (state.mapReady) {
+        setTimeout(() => state.map.invalidateSize(), 50);
+      }
+    }
+
+    function syncViewFromHash() {
+      const nextView = location.hash === "#places" ? "places" : "route";
+      const routeTarget = routeTargetFromHash();
+      const sameRouteTarget = !routeTarget || (state.dayIndex === routeTarget.dayIndex && state.stopIndex === routeTarget.stopIndex);
+      if (state.view === nextView && sameRouteTarget) return;
+      pause();
+      state.view = nextView;
+      if (routeTarget) {
+        state.dayIndex = routeTarget.dayIndex;
+        state.stopIndex = routeTarget.stopIndex;
+      }
+      state.editingCommentId = null;
+      render();
+      if (state.mapReady) {
+        setTimeout(() => state.map.invalidateSize(), 50);
+      }
     }
 
     async function addComment(event) {
@@ -2069,6 +2554,8 @@
         renderDetail();
       }
     });
+
+    window.addEventListener("hashchange", syncViewFromHash);
 
     window.addEventListener("resize", () => {
       if (state.mapReady) {
