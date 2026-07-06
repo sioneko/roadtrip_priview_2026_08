@@ -1731,6 +1731,8 @@
       activeId: "",
       routeMarkers: [],
       placesMarkers: [],
+      routeLayer: null,
+      placesLayer: null,
       syncStatus: ""
     };
 
@@ -1802,8 +1804,13 @@
         attribution: "&copy; OpenStreetMap"
       }).addTo(state.map);
 
-      state.map.on("click", event => {
-        createMapAnnotation(event.latlng, "route");
+      const annotationPane = state.map.createPane("routeAnnotationPane");
+      annotationPane.style.zIndex = 680;
+      annotationPane.style.pointerEvents = "auto";
+      annotationState.routeLayer = L.layerGroup().addTo(state.map);
+
+      state.map.getContainer().addEventListener("click", event => {
+        createMapAnnotationFromMapEvent(event, state.map, "route");
       });
 
       state.mapReady = true;
@@ -2441,8 +2448,13 @@
         attribution: "&copy; OpenStreetMap"
       }).addTo(placesState.map);
 
-      placesState.map.on("click", event => {
-        createMapAnnotation(event.latlng, "places");
+      const annotationPane = placesState.map.createPane("placesAnnotationPane");
+      annotationPane.style.zIndex = 680;
+      annotationPane.style.pointerEvents = "auto";
+      annotationState.placesLayer = L.layerGroup().addTo(placesState.map);
+
+      placesState.map.getContainer().addEventListener("click", event => {
+        createMapAnnotationFromMapEvent(event, placesState.map, "places");
       });
 
       placesState.mapReady = true;
@@ -2709,18 +2721,21 @@
     }
 
     function renderAnnotationMarkers() {
+      if (annotationState.routeLayer) annotationState.routeLayer.clearLayers();
+      if (annotationState.placesLayer) annotationState.placesLayer.clearLayers();
       annotationState.routeMarkers.forEach(marker => marker.remove());
       annotationState.placesMarkers.forEach(marker => marker.remove());
       annotationState.routeMarkers = [];
       annotationState.placesMarkers = [];
 
-      if (state.mapReady) {
+      if (state.mapReady && annotationState.routeLayer) {
         visibleMapAnnotations("route").forEach(item => {
           const marker = L.marker([item.lat, item.lng], {
             icon: annotationIcon(item, annotationState.activeId === item.id),
             title: item.text,
+            pane: "routeAnnotationPane",
             zIndexOffset: 300
-          }).addTo(state.map);
+          }).addTo(annotationState.routeLayer);
           marker.on("click", event => {
             if (event.originalEvent) L.DomEvent.stop(event.originalEvent);
             openAnnotationCard(item.id);
@@ -2729,13 +2744,14 @@
         });
       }
 
-      if (placesState.mapReady) {
+      if (placesState.mapReady && annotationState.placesLayer) {
         visibleMapAnnotations("places").forEach(item => {
           const marker = L.marker([item.lat, item.lng], {
             icon: annotationIcon(item, annotationState.activeId === item.id),
             title: item.text,
+            pane: "placesAnnotationPane",
             zIndexOffset: 300
-          }).addTo(placesState.map);
+          }).addTo(annotationState.placesLayer);
           marker.on("click", event => {
             if (event.originalEvent) L.DomEvent.stop(event.originalEvent);
             openAnnotationCard(item.id);
@@ -2879,6 +2895,12 @@
         lat: Number(latlng.lat.toFixed(6)),
         lng: Number(latlng.lng.toFixed(6))
       });
+    }
+
+    function createMapAnnotationFromMapEvent(event, mapInstance, mapId) {
+      if (!annotationState.enabled || annotationState.mode !== "map") return;
+      if (event.target.closest(".leaflet-control, .leaflet-marker-icon, .annotation-marker")) return;
+      createMapAnnotation(mapInstance.mouseEventToLatLng(event), mapId);
     }
 
     async function saveAnnotationEdit(event) {
