@@ -111,7 +111,7 @@
 
     .shell {
       position: relative;
-      z-index: 5;
+      z-index: 700;
       display: grid;
       grid-template-columns: minmax(300px, 360px) minmax(0, 1fr) minmax(300px, 360px);
       grid-template-rows: auto minmax(0, 1fr) auto;
@@ -134,6 +134,8 @@
 
     .topbar {
       grid-column: 1 / 4;
+      position: relative;
+      z-index: 4;
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
@@ -198,7 +200,16 @@
       font-weight: 800;
     }
 
+    .pin-pill.active {
+      color: #fff;
+      border-color: var(--plum);
+      background: var(--plum);
+      font-weight: 800;
+    }
+
     .side-panel {
+      position: relative;
+      z-index: 2;
       grid-column: 1;
       grid-row: 2;
       align-self: stretch;
@@ -425,6 +436,8 @@
     }
 
     .detail-panel {
+      position: relative;
+      z-index: 2;
       grid-column: 3;
       grid-row: 2;
       align-self: end;
@@ -1118,6 +1131,174 @@
       background: var(--blue);
     }
 
+    .annotation-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 760;
+      pointer-events: none;
+    }
+
+    .annotation-layer.placing-ui {
+      cursor: crosshair;
+      pointer-events: auto;
+    }
+
+    .annotation-pin {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      transform: translate(-50%, -100%);
+      border: 2px solid #fff;
+      border-radius: 999px 999px 999px 4px;
+      color: #fff;
+      background: var(--pin-color, var(--plum));
+      box-shadow: 0 10px 24px rgba(27, 38, 49, 0.28);
+      font-size: 12px;
+      font-weight: 900;
+      pointer-events: auto;
+    }
+
+    .annotation-pin.active {
+      width: 34px;
+      height: 34px;
+      box-shadow: 0 14px 34px rgba(138, 63, 252, 0.38);
+    }
+
+    .annotation-marker {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 999px 999px 999px 4px;
+      color: #fff;
+      background: var(--pin-color, var(--plum));
+      box-shadow: 0 10px 24px rgba(27, 38, 49, 0.28);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .annotation-marker.active {
+      width: 34px;
+      height: 34px;
+      box-shadow: 0 14px 34px rgba(138, 63, 252, 0.38);
+    }
+
+    .annotation-toolbar,
+    .annotation-card {
+      position: fixed;
+      z-index: 780;
+      pointer-events: auto;
+      border: 1px solid rgba(216, 224, 231, 0.92);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .annotation-toolbar {
+      left: 50%;
+      bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      transform: translateX(-50%);
+    }
+
+    .annotation-toolbar[hidden],
+    .annotation-card[hidden] {
+      display: none;
+    }
+
+    .pin-mode-btn {
+      min-height: 32px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #34414d;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pin-mode-btn.active {
+      color: #fff;
+      border-color: var(--plum);
+      background: var(--plum);
+    }
+
+    .annotation-card {
+      right: 16px;
+      bottom: 72px;
+      width: min(360px, calc(100vw - 32px));
+      overflow: hidden;
+    }
+
+    .annotation-card-band {
+      min-height: 8px;
+      background: var(--comment-color, var(--plum));
+    }
+
+    .annotation-card-body {
+      padding: 14px;
+    }
+
+    .annotation-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .annotation-card-head strong {
+      font-size: 15px;
+    }
+
+    .annotation-card-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .annotation-form {
+      display: grid;
+      gap: 8px;
+    }
+
+    .annotation-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .annotation-actions button {
+      flex: 1;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: #34414d;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .annotation-actions .primary {
+      color: #fff;
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+
+    .annotation-actions .danger {
+      color: #9f1239;
+      border-color: rgba(159, 18, 57, 0.24);
+      background: #fff1f2;
+    }
+
     @media (max-width: 1180px) {
       .shell {
         grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
@@ -1404,6 +1585,21 @@
         bottom: auto;
         width: 100%;
       }
+
+      .annotation-toolbar {
+        left: 10px;
+        right: 10px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        justify-content: center;
+        transform: none;
+      }
+
+      .annotation-card {
+        left: 10px;
+        right: 10px;
+        bottom: calc(68px + env(safe-area-inset-bottom));
+        width: auto;
+      }
     }
   </style>
 </head>
@@ -1430,6 +1626,7 @@
           <span class="meta-pill">约 900 km+</span>
           <span class="meta-pill">鸟取进 / 下关或山口出</span>
           <a class="meta-pill" href="#map">全地点地图</a>
+          <button id="pinToggleBtn" class="meta-pill pin-pill" type="button">气泡 P</button>
           <button id="visitorBtn" class="meta-pill visitor-pill" type="button">访客：设置名字</button>
         </div>
       </header>
@@ -1477,6 +1674,7 @@
           <div class="places-nav">
             <a class="meta-pill" href="#route">路线预览</a>
             <span id="placesCount" class="meta-pill visitor-pill"></span>
+            <button id="placesPinToggleBtn" class="meta-pill pin-pill" type="button">气泡 P</button>
           </div>
         </header>
         <nav id="placesFilter" class="places-filter" aria-label="按天筛选地点"></nav>
@@ -1487,11 +1685,20 @@
     </section>
   </main>
 
+  <div id="annotationLayer" class="annotation-layer"></div>
+  <div id="annotationToolbar" class="annotation-toolbar" hidden>
+    <button id="pinUiModeBtn" class="pin-mode-btn" type="button">贴 UI</button>
+    <button id="pinMapModeBtn" class="pin-mode-btn" type="button">贴地图</button>
+    <button id="pinCloseBtn" class="pin-mode-btn" type="button">关闭</button>
+  </div>
+  <article id="annotationCard" class="annotation-card" aria-live="polite" hidden></article>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="./trip-data.js"></script>
   <script>
     const { routeDays: ROUTE_DAYS, photoGradients: PHOTO_GRADIENTS } = window.TRIP_DATA;
     const COMMENT_KEY = "sanin-yamaguchi-roadtrip-comments-v1";
+    const ANNOTATION_KEY = "sanin-yamaguchi-roadtrip-annotations-v1";
     const VISITOR_KEY = "sanin-yamaguchi-roadtrip-visitor-v1";
     const SYNC_ENDPOINT = "https://script.google.com/macros/s/AKfycbzFipxrcrVtDg1XMtVA0Cs0oARuNnMlteLeShhlTZtcPzPzea_QA9Wp5-fgjbT7PSd-hg/exec";
     const SYNC_REFRESH_MS = 45000;
@@ -1515,6 +1722,16 @@
       visitor: initialVisitor,
       syncStatus: "",
       editingCommentId: null
+    };
+
+    const annotationState = {
+      items: loadAnnotations(initialVisitor),
+      enabled: false,
+      mode: "ui",
+      activeId: "",
+      routeMarkers: [],
+      placesMarkers: [],
+      syncStatus: ""
     };
 
     const placesState = {
@@ -1543,7 +1760,14 @@
       speedSelect: document.getElementById("speedSelect"),
       mapChip: document.getElementById("mapChip"),
       mapFallback: document.getElementById("mapFallback"),
-      visitorBtn: document.getElementById("visitorBtn")
+      visitorBtn: document.getElementById("visitorBtn"),
+      pinToggleBtn: document.getElementById("pinToggleBtn"),
+      annotationLayer: document.getElementById("annotationLayer"),
+      annotationToolbar: document.getElementById("annotationToolbar"),
+      annotationCard: document.getElementById("annotationCard"),
+      pinUiModeBtn: document.getElementById("pinUiModeBtn"),
+      pinMapModeBtn: document.getElementById("pinMapModeBtn"),
+      pinCloseBtn: document.getElementById("pinCloseBtn")
     };
 
     const placesEls = {
@@ -1551,7 +1775,8 @@
       list: document.getElementById("placesList"),
       card: document.getElementById("placesCard"),
       chip: document.getElementById("placesChip"),
-      count: document.getElementById("placesCount")
+      count: document.getElementById("placesCount"),
+      pinToggleBtn: document.getElementById("placesPinToggleBtn")
     };
 
     function pageFromHash() {
@@ -1577,6 +1802,10 @@
         attribution: "&copy; OpenStreetMap"
       }).addTo(state.map);
 
+      state.map.on("click", event => {
+        createMapAnnotation(event.latlng, "route");
+      });
+
       state.mapReady = true;
       drawMap();
     }
@@ -1598,6 +1827,14 @@
         return normalizeLocalComments(JSON.parse(localStorage.getItem(COMMENT_KEY)) || {}, visitor);
       } catch (error) {
         return {};
+      }
+    }
+
+    function loadAnnotations(visitor) {
+      try {
+        return normalizeAnnotations(JSON.parse(localStorage.getItem(ANNOTATION_KEY)) || [], visitor);
+      } catch (error) {
+        return [];
       }
     }
 
@@ -1623,6 +1860,25 @@
         });
       });
       return comments || {};
+    }
+
+    function normalizeAnnotations(items, visitor) {
+      return (items || []).map(item => ({
+        id: item.id || `annotation-${hashText(`${item.createdAt || ""}|${item.text || ""}|${item.x || ""}|${item.lat || ""}`)}`,
+        visitorId: item.visitorId || visitor.id,
+        name: item.name || "未署名",
+        text: item.text || "已标记",
+        color: item.color || COMMENT_COLORS[0],
+        target: item.target === "map" ? "map" : "ui",
+        page: item.page === "map" ? "map" : "route",
+        mapId: item.mapId === "places" ? "places" : "route",
+        x: Number(item.x || 50),
+        y: Number(item.y || 50),
+        lat: item.lat === "" || item.lat === undefined ? "" : Number(item.lat),
+        lng: item.lng === "" || item.lng === undefined ? "" : Number(item.lng),
+        createdAt: item.createdAt || new Date().toISOString(),
+        updatedAt: item.updatedAt || ""
+      }));
     }
 
     function createVisitorId() {
@@ -1670,6 +1926,10 @@
 
     function saveComments() {
       localStorage.setItem(COMMENT_KEY, JSON.stringify(state.comments));
+    }
+
+    function saveAnnotations() {
+      localStorage.setItem(ANNOTATION_KEY, JSON.stringify(annotationState.items));
     }
 
     function syncEnabled() {
@@ -1754,6 +2014,10 @@
       return grouped;
     }
 
+    function normalizeRemoteAnnotations(rows) {
+      return normalizeAnnotations((rows || []).filter(row => row.id), state.visitor);
+    }
+
     function assertSyncResponse(response) {
       if (response && response.ok === false) {
         throw new Error(response.error || "Google Sheet sync returned an error.");
@@ -1781,6 +2045,33 @@
         if (filtered.length) own[routeKey] = filtered;
       });
       return own;
+    }
+
+    function annotationIdentity(item) {
+      return item.id || `${item.createdAt}|${item.visitorId}|${item.text}|${item.target}|${item.x}|${item.lat}`;
+    }
+
+    function mergeAnnotations(remoteItems, localItems) {
+      const seen = new Set();
+      return [...(remoteItems || []), ...(localItems || [])]
+        .filter(item => {
+          const id = annotationIdentity(item);
+          if (seen.has(id)) return false;
+          seen.add(id);
+          return true;
+        })
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    }
+
+    function ownLocalAnnotations(items) {
+      return (items || []).filter(item => item.visitorId === state.visitor.id);
+    }
+
+    function annotationsMissingFromRemote(localItems, remoteItems) {
+      const remoteIds = new Set((remoteItems || []).map(annotationIdentity));
+      return (localItems || []).filter(item => {
+        return item.visitorId === state.visitor.id && !remoteIds.has(annotationIdentity(item));
+      });
     }
 
     function routeInfoFromKey(routeKey) {
@@ -1838,6 +2129,60 @@
       }
     }
 
+    async function syncAnnotation(action, item) {
+      if (!syncEnabled()) return;
+
+      const response = await jsonpRequest({
+        action,
+        id: item.id,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt || "",
+        visitorId: item.visitorId,
+        name: item.name,
+        color: item.color,
+        text: item.text,
+        target: item.target,
+        page: item.page,
+        mapId: item.mapId,
+        x: item.x,
+        y: item.y,
+        lat: item.lat,
+        lng: item.lng
+      });
+      if (!response || response.kind !== "annotations") throw new Error("annotations_not_supported");
+      assertSyncResponse(response);
+      annotationState.syncStatus = "Google Sheet 已同步";
+    }
+
+    async function uploadMissingLocalAnnotations(remoteItems) {
+      const missing = annotationsMissingFromRemote(annotationState.items, remoteItems);
+      if (!missing.length) return;
+
+      for (const item of missing) {
+        await syncAnnotation("addAnnotation", item);
+      }
+    }
+
+    async function refreshSyncedAnnotations() {
+      if (!syncEnabled()) {
+        annotationState.syncStatus = "本机记录";
+        return;
+      }
+
+      try {
+        const response = await jsonpRequest({ action: "listAnnotations" });
+        if (!response || response.kind !== "annotations") throw new Error("annotations_not_supported");
+        const remote = normalizeRemoteAnnotations(response.rows);
+        await uploadMissingLocalAnnotations(remote);
+        annotationState.items = mergeAnnotations(remote, ownLocalAnnotations(annotationState.items));
+        saveAnnotations();
+        annotationState.syncStatus = "Google Sheet 已同步";
+        renderAnnotations();
+      } catch (error) {
+        annotationState.syncStatus = "气泡同步失败，已保留本机记录";
+      }
+    }
+
     async function syncComment(routeKey, comment, currentDay, currentStop, item) {
       if (!syncEnabled()) return;
 
@@ -1890,8 +2235,22 @@
       }
     }
 
+    async function syncAnnotationChange(action, item) {
+      try {
+        await syncAnnotation(action, item);
+        window.setTimeout(refreshSyncedAnnotations, 900);
+      } catch (error) {
+        annotationState.syncStatus = "气泡同步失败，已保留本机记录";
+        throw error;
+      }
+    }
+
     function canEditComment(comment) {
       return comment.visitorId === state.visitor.id;
+    }
+
+    function canEditAnnotation(item) {
+      return item.visitorId === state.visitor.id;
     }
 
     function commentsFor(dayIndex = state.dayIndex, stopIndex = state.stopIndex) {
@@ -1978,6 +2337,15 @@
       });
     }
 
+    function annotationIcon(item, active) {
+      return L.divIcon({
+        className: "",
+        html: `<div class="annotation-marker${active ? " active" : ""}" style="--pin-color:${item.color}">P</div>`,
+        iconSize: active ? [34, 34] : [28, 28],
+        iconAnchor: active ? [8, 32] : [7, 26]
+      });
+    }
+
     function movingIcon() {
       return L.divIcon({
         className: "",
@@ -2016,7 +2384,8 @@
           title: item.name
         }).addTo(state.map);
 
-        marker.on("click", () => {
+        marker.on("click", event => {
+          if (event.originalEvent) L.DomEvent.stop(event.originalEvent);
           pause();
           state.stopIndex = index;
           render();
@@ -2053,6 +2422,8 @@
           duration: 0.8
         });
       }, 200);
+
+      renderAnnotations();
     }
 
     function initPlacesMap() {
@@ -2069,6 +2440,10 @@
         maxZoom: 18,
         attribution: "&copy; OpenStreetMap"
       }).addTo(placesState.map);
+
+      placesState.map.on("click", event => {
+        createMapAnnotation(event.latlng, "places");
+      });
 
       placesState.mapReady = true;
       drawPlacesMap();
@@ -2100,7 +2475,10 @@
           title: item.name
         }).addTo(placesState.map);
 
-        marker.on("click", () => selectPlace(item.key));
+        marker.on("click", event => {
+          if (event.originalEvent) L.DomEvent.stop(event.originalEvent);
+          selectPlace(item.key);
+        });
         placesState.markers.push(marker);
       });
 
@@ -2121,6 +2499,8 @@
           duration: 0.5
         });
       }
+
+      renderAnnotations();
     }
 
     function progressCoords() {
@@ -2291,6 +2671,262 @@
       els.playBtn.setAttribute("title", state.playing ? "暂停路线" : "播放路线");
     }
 
+    function visibleUiAnnotations() {
+      return annotationState.items.filter(item => item.target === "ui" && item.page === state.page);
+    }
+
+    function visibleMapAnnotations(mapId) {
+      return annotationState.items.filter(item => item.target === "map" && item.mapId === mapId && item.lat !== "" && item.lng !== "");
+    }
+
+    function renderAnnotationControls() {
+      const active = annotationState.enabled;
+      els.pinToggleBtn.classList.toggle("active", active);
+      placesEls.pinToggleBtn.classList.toggle("active", active);
+      els.pinToggleBtn.textContent = active ? "气泡中" : "气泡 P";
+      placesEls.pinToggleBtn.textContent = active ? "气泡中" : "气泡 P";
+      els.annotationToolbar.hidden = !active;
+      els.pinUiModeBtn.classList.toggle("active", annotationState.mode === "ui");
+      els.pinMapModeBtn.classList.toggle("active", annotationState.mode === "map");
+      els.annotationLayer.classList.toggle("placing-ui", active && annotationState.mode === "ui");
+      document.body.classList.toggle("placing-map-pin", active && annotationState.mode === "map");
+      [document.getElementById("map"), document.getElementById("placesMap")].forEach(mapEl => {
+        if (mapEl) mapEl.style.cursor = active && annotationState.mode === "map" ? "crosshair" : "";
+      });
+    }
+
+    function renderUiAnnotations() {
+      els.annotationLayer.innerHTML = visibleUiAnnotations().map(item => `
+        <button class="annotation-pin${annotationState.activeId === item.id ? " active" : ""}" type="button" data-annotation-id="${escapeHtml(item.id)}" style="left:${item.x}%; top:${item.y}%; --pin-color:${item.color}" title="${escapeHtml(item.text)}">P</button>
+      `).join("");
+
+      els.annotationLayer.querySelectorAll("[data-annotation-id]").forEach(button => {
+        button.addEventListener("click", event => {
+          event.stopPropagation();
+          openAnnotationCard(button.dataset.annotationId);
+        });
+      });
+    }
+
+    function renderAnnotationMarkers() {
+      annotationState.routeMarkers.forEach(marker => marker.remove());
+      annotationState.placesMarkers.forEach(marker => marker.remove());
+      annotationState.routeMarkers = [];
+      annotationState.placesMarkers = [];
+
+      if (state.mapReady) {
+        visibleMapAnnotations("route").forEach(item => {
+          const marker = L.marker([item.lat, item.lng], {
+            icon: annotationIcon(item, annotationState.activeId === item.id),
+            title: item.text,
+            zIndexOffset: 300
+          }).addTo(state.map);
+          marker.on("click", event => {
+            if (event.originalEvent) L.DomEvent.stop(event.originalEvent);
+            openAnnotationCard(item.id);
+          });
+          annotationState.routeMarkers.push(marker);
+        });
+      }
+
+      if (placesState.mapReady) {
+        visibleMapAnnotations("places").forEach(item => {
+          const marker = L.marker([item.lat, item.lng], {
+            icon: annotationIcon(item, annotationState.activeId === item.id),
+            title: item.text,
+            zIndexOffset: 300
+          }).addTo(placesState.map);
+          marker.on("click", event => {
+            if (event.originalEvent) L.DomEvent.stop(event.originalEvent);
+            openAnnotationCard(item.id);
+          });
+          annotationState.placesMarkers.push(marker);
+        });
+      }
+    }
+
+    function renderAnnotationCard() {
+      const item = annotationState.items.find(annotation => annotation.id === annotationState.activeId);
+      if (!item) {
+        els.annotationCard.hidden = true;
+        return;
+      }
+
+      const editable = canEditAnnotation(item);
+      const colorOptions = COMMENT_COLORS.map(color => `
+        <label title="气泡颜色">
+          <input type="radio" name="annotationColor" value="${color}" ${color === item.color ? "checked" : ""} ${editable ? "" : "disabled"}>
+          <span class="color-dot" style="--comment-color:${color}"></span>
+        </label>
+      `).join("");
+
+      els.annotationCard.hidden = false;
+      els.annotationCard.innerHTML = `
+        <div class="annotation-card-band" style="--comment-color:${item.color}"></div>
+        <div class="annotation-card-body">
+          <div class="annotation-card-head">
+            <strong>${item.target === "map" ? "地图气泡" : "UI 气泡"}</strong>
+            <span>${escapeHtml(item.name)} · ${formatCommentTime(item.createdAt)}</span>
+          </div>
+          <form id="annotationForm" class="annotation-form">
+            <input id="annotationName" class="comment-input" type="text" maxlength="18" value="${escapeHtml(item.name)}" ${editable ? "" : "disabled"}>
+            <div class="color-options">${colorOptions}</div>
+            <textarea id="annotationText" class="comment-text" maxlength="120" ${editable ? "" : "disabled"}>${escapeHtml(item.text)}</textarea>
+            <div class="annotation-actions">
+              ${editable ? `<button class="primary" type="submit">保存修改</button><button class="danger" type="button" id="annotationDeleteBtn">删除</button>` : ""}
+              <button type="button" id="annotationCloseBtn">关闭</button>
+            </div>
+          </form>
+        </div>
+      `;
+
+      const form = document.getElementById("annotationForm");
+      if (form && editable) form.addEventListener("submit", saveAnnotationEdit);
+      const deleteBtn = document.getElementById("annotationDeleteBtn");
+      if (deleteBtn) deleteBtn.addEventListener("click", deleteActiveAnnotation);
+      const closeBtn = document.getElementById("annotationCloseBtn");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+          annotationState.activeId = "";
+          renderAnnotations();
+        });
+      }
+    }
+
+    function renderAnnotations() {
+      renderAnnotationControls();
+      renderUiAnnotations();
+      renderAnnotationMarkers();
+      renderAnnotationCard();
+    }
+
+    function openAnnotationCard(id) {
+      annotationState.activeId = id;
+      renderAnnotations();
+    }
+
+    function setAnnotationMode(mode) {
+      annotationState.enabled = true;
+      annotationState.mode = mode;
+      annotationState.activeId = "";
+      renderAnnotations();
+    }
+
+    function toggleAnnotationMode() {
+      annotationState.enabled = !annotationState.enabled;
+      annotationState.activeId = "";
+      renderAnnotations();
+    }
+
+    function closeAnnotationMode() {
+      annotationState.enabled = false;
+      renderAnnotations();
+    }
+
+    function requestAnnotationDraft() {
+      return {
+        name: state.visitor.name || "未署名",
+        text: "新气泡",
+        color: COMMENT_COLORS[0]
+      };
+    }
+
+    function createAnnotation(fields) {
+      const draft = requestAnnotationDraft();
+      if (!draft) return;
+
+      const item = {
+        id: `${state.visitor.id}-annotation-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        visitorId: state.visitor.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: "",
+        ...draft,
+        ...fields
+      };
+
+      annotationState.items = [...annotationState.items, item];
+      annotationState.activeId = item.id;
+      saveAnnotations();
+      renderAnnotations();
+      syncAnnotationChange("addAnnotation", item).catch(() => renderAnnotations());
+    }
+
+    function createUiAnnotation(event) {
+      if (!annotationState.enabled || annotationState.mode !== "ui") return;
+      if (event.target.closest(".annotation-toolbar, .annotation-card, .annotation-pin")) return;
+
+      const x = Math.max(0, Math.min(100, (event.clientX / window.innerWidth) * 100));
+      const y = Math.max(0, Math.min(100, (event.clientY / window.innerHeight) * 100));
+      createAnnotation({
+        target: "ui",
+        page: state.page,
+        mapId: state.page === "map" ? "places" : "route",
+        x: Number(x.toFixed(3)),
+        y: Number(y.toFixed(3)),
+        lat: "",
+        lng: ""
+      });
+    }
+
+    function createMapAnnotation(latlng, mapId) {
+      if (!annotationState.enabled || annotationState.mode !== "map") return;
+      createAnnotation({
+        target: "map",
+        page: mapId === "places" ? "map" : "route",
+        mapId,
+        x: "",
+        y: "",
+        lat: Number(latlng.lat.toFixed(6)),
+        lng: Number(latlng.lng.toFixed(6))
+      });
+    }
+
+    async function saveAnnotationEdit(event) {
+      event.preventDefault();
+      const item = annotationState.items.find(annotation => annotation.id === annotationState.activeId);
+      if (!item || !canEditAnnotation(item)) return;
+
+      const nameInput = document.getElementById("annotationName");
+      const textInput = document.getElementById("annotationText");
+      const colorInput = document.querySelector('input[name="annotationColor"]:checked');
+      if (nameInput.value.trim()) setVisitorName(nameInput.value.trim());
+
+      const updated = {
+        ...item,
+        name: nameInput.value.trim() || item.name,
+        text: textInput.value.trim() || "已标记",
+        color: colorInput ? colorInput.value : item.color,
+        updatedAt: new Date().toISOString()
+      };
+
+      annotationState.items = annotationState.items.map(annotation => annotation.id === updated.id ? updated : annotation);
+      saveAnnotations();
+      renderAnnotations();
+      try {
+        await syncAnnotationChange("updateAnnotation", updated);
+      } catch (error) {
+        renderAnnotations();
+      }
+    }
+
+    async function deleteActiveAnnotation() {
+      const item = annotationState.items.find(annotation => annotation.id === annotationState.activeId);
+      if (!item || !canEditAnnotation(item)) return;
+      const ok = window.confirm("删除这个气泡和它的备注？");
+      if (!ok) return;
+
+      try {
+        await syncAnnotationChange("deleteAnnotation", item);
+      } catch (error) {
+        // Keep local deletion available even when the annotation backend has not been deployed yet.
+      }
+
+      annotationState.items = annotationState.items.filter(annotation => annotation.id !== item.id);
+      annotationState.activeId = "";
+      saveAnnotations();
+      renderAnnotations();
+    }
+
     function renderPlacesFilters() {
       const filters = [
         `<button class="places-filter-btn${placesState.activeDay === "all" ? " active" : ""}" type="button" data-place-day="all">全部</button>`,
@@ -2402,6 +3038,7 @@
       renderDetail();
       renderTimeline();
       drawMap();
+      renderAnnotations();
     }
 
     function showPage(page) {
@@ -2414,6 +3051,7 @@
         pause(false);
         initPlacesMap();
         renderPlaces();
+        renderAnnotations();
         if (placesState.mapReady) {
           window.setTimeout(() => placesState.map.invalidateSize(), 50);
         }
@@ -2422,6 +3060,7 @@
 
       initMap();
       render();
+      renderAnnotations();
       if (state.mapReady) {
         window.setTimeout(() => state.map.invalidateSize(), 50);
       }
@@ -2621,6 +3260,22 @@
       }
     });
 
+    els.pinToggleBtn.addEventListener("click", toggleAnnotationMode);
+    placesEls.pinToggleBtn.addEventListener("click", toggleAnnotationMode);
+    els.pinUiModeBtn.addEventListener("click", () => setAnnotationMode("ui"));
+    els.pinMapModeBtn.addEventListener("click", () => setAnnotationMode("map"));
+    els.pinCloseBtn.addEventListener("click", closeAnnotationMode);
+    els.annotationLayer.addEventListener("click", createUiAnnotation);
+
+    window.addEventListener("keydown", event => {
+      const tagName = event.target && event.target.tagName ? event.target.tagName.toLowerCase() : "";
+      if (tagName === "input" || tagName === "textarea" || tagName === "select") return;
+      if (event.key.toLowerCase() === "p") {
+        event.preventDefault();
+        toggleAnnotationMode();
+      }
+    });
+
     window.addEventListener("hashchange", syncPageFromHash);
 
     window.addEventListener("resize", () => {
@@ -2634,8 +3289,10 @@
 
     showPage(state.page);
     refreshSyncedComments();
+    refreshSyncedAnnotations();
     if (syncEnabled()) {
       window.setInterval(refreshSyncedComments, SYNC_REFRESH_MS);
+      window.setInterval(refreshSyncedAnnotations, SYNC_REFRESH_MS);
     }
   </script>
 </body>
