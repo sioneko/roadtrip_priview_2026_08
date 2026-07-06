@@ -878,6 +878,240 @@
       font-weight: 900;
     }
 
+    .map-page {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 640px;
+      color: var(--ink);
+      background: #dfeaf0;
+    }
+
+    .map-page[hidden] {
+      display: none;
+    }
+
+    #placesMap {
+      position: absolute;
+      inset: 0;
+      background: #dce9ee;
+    }
+
+    .places-shell {
+      position: relative;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+      gap: 14px;
+      height: 100%;
+      padding: 14px;
+      pointer-events: none;
+    }
+
+    .places-panel,
+    .places-card,
+    .places-chip {
+      pointer-events: auto;
+      border: 1px solid rgba(216, 224, 231, 0.9);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .places-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .places-head {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .places-head h1 {
+      font-size: 22px;
+    }
+
+    .places-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .places-filter {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      scrollbar-width: thin;
+    }
+
+    .places-filter-btn {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #40505d;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .places-filter-btn.active {
+      color: #fff;
+      border-color: var(--day-color, var(--blue));
+      background: var(--day-color, var(--blue));
+    }
+
+    .places-list {
+      min-height: 0;
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .places-item {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr);
+      gap: 9px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      color: inherit;
+      background: transparent;
+      text-align: left;
+    }
+
+    .places-item + .places-item {
+      margin-top: 5px;
+    }
+
+    .places-item:hover,
+    .places-item.active {
+      border-color: rgba(37, 99, 235, 0.26);
+      background: rgba(232, 240, 255, 0.9);
+    }
+
+    .places-index {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--day-color, var(--road));
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .places-name {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .places-sub {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .places-chip {
+      justify-self: center;
+      align-self: start;
+      max-width: min(620px, 100%);
+      padding: 9px 12px;
+      color: #34414d;
+      font-size: 13px;
+    }
+
+    .places-card {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      width: min(360px, calc(100vw - 420px));
+      overflow: hidden;
+    }
+
+    .places-card[hidden] {
+      display: none;
+    }
+
+    .places-card-band {
+      min-height: 8px;
+      background: var(--day-color, var(--blue));
+    }
+
+    .places-card-body {
+      padding: 14px;
+    }
+
+    .places-card-body h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .places-meta,
+    .places-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .places-meta span {
+      display: inline-flex;
+      min-height: 26px;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: #485560;
+      background: #f1f5f7;
+      font-size: 12px;
+    }
+
+    .places-card-body p {
+      margin: 10px 0 0;
+      color: #34414d;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .places-actions a,
+    .places-actions button {
+      flex: 1;
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: #34414d;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .places-actions a {
+      color: #fff;
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+
     @media (max-width: 1180px) {
       .shell {
         grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
@@ -1119,10 +1353,56 @@
         margin-top: 8px;
       }
     }
+
+    @media (max-width: 860px) {
+      .map-page {
+        min-height: 100dvh;
+        height: auto;
+        overflow: visible;
+      }
+
+      #placesMap {
+        position: relative;
+        height: 46dvh;
+        min-height: 310px;
+      }
+
+      .places-shell {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 100dvh;
+        padding: 10px;
+        pointer-events: auto;
+      }
+
+      .places-chip {
+        order: 1;
+        justify-self: auto;
+        align-self: stretch;
+      }
+
+      .places-panel {
+        order: 2;
+        max-height: none;
+      }
+
+      .places-list {
+        max-height: 42dvh;
+      }
+
+      .places-card {
+        position: relative;
+        order: 3;
+        right: auto;
+        bottom: auto;
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
-  <main class="app">
+  <main id="routeApp" class="app">
     <div id="map"></div>
     <div id="mapFallback" class="map-fallback" hidden>
       <div class="fallback-inner">
@@ -1143,7 +1423,7 @@
           <span class="meta-pill">7 天候选</span>
           <span class="meta-pill">约 900 km+</span>
           <span class="meta-pill">鸟取进 / 下关或山口出</span>
-          <a class="meta-pill" href="./map.html">全地点地图</a>
+          <a class="meta-pill" href="#map">全地点地图</a>
           <button id="visitorBtn" class="meta-pill visitor-pill" type="button">访客：设置名字</button>
         </div>
       </header>
@@ -1181,6 +1461,26 @@
     </section>
   </main>
 
+  <main id="placesApp" class="map-page" hidden>
+    <div id="placesMap"></div>
+    <section class="places-shell" aria-label="全地点地图预览">
+      <aside class="places-panel">
+        <header class="places-head">
+          <p class="eyebrow">All Places Map</p>
+          <h1>全地点地图</h1>
+          <div class="places-nav">
+            <a class="meta-pill" href="#route">路线预览</a>
+            <span id="placesCount" class="meta-pill visitor-pill"></span>
+          </div>
+        </header>
+        <nav id="placesFilter" class="places-filter" aria-label="按天筛选地点"></nav>
+        <div id="placesList" class="places-list"></div>
+      </aside>
+      <div id="placesChip" class="places-chip"></div>
+      <article id="placesCard" class="places-card" hidden></article>
+    </section>
+  </main>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="./trip-data.js"></script>
   <script>
@@ -1194,6 +1494,7 @@
     const initialVisitor = loadVisitor();
 
     const state = {
+      page: pageFromHash(),
       dayIndex: 0,
       stopIndex: 0,
       playing: false,
@@ -1210,7 +1511,18 @@
       editingCommentId: null
     };
 
+    const placesState = {
+      map: null,
+      mapReady: false,
+      lines: [],
+      markers: [],
+      activeDay: "all",
+      activeKey: ""
+    };
+
     const els = {
+      routeApp: document.getElementById("routeApp"),
+      placesApp: document.getElementById("placesApp"),
       dayTabs: document.getElementById("dayTabs"),
       daySummary: document.getElementById("daySummary"),
       stopList: document.getElementById("stopList"),
@@ -1228,7 +1540,20 @@
       visitorBtn: document.getElementById("visitorBtn")
     };
 
+    const placesEls = {
+      filter: document.getElementById("placesFilter"),
+      list: document.getElementById("placesList"),
+      card: document.getElementById("placesCard"),
+      chip: document.getElementById("placesChip"),
+      count: document.getElementById("placesCount")
+    };
+
+    function pageFromHash() {
+      return location.hash === "#map" || location.hash === "#places" ? "map" : "route";
+    }
+
     function initMap() {
+      if (state.mapReady) return;
       if (!window.L) {
         els.mapFallback.hidden = false;
         return;
@@ -1606,6 +1931,28 @@
       return `https://www.google.com/maps/search/?api=1&query=${query}`;
     }
 
+    function allStops() {
+      return ROUTE_DAYS.flatMap((routeDay, dayIndex) => {
+        return routeDay.stops.map((item, stopIndex) => ({
+          ...item,
+          key: stopKey(dayIndex, stopIndex),
+          routeDay,
+          dayIndex,
+          stopIndex
+        }));
+      });
+    }
+
+    function visiblePlaces() {
+      const stops = allStops();
+      if (placesState.activeDay === "all") return stops;
+      return stops.filter(item => item.dayIndex === Number(placesState.activeDay));
+    }
+
+    function currentPlace() {
+      return allStops().find(item => item.key === placesState.activeKey);
+    }
+
     function formatCommentTime(value) {
       return new Intl.DateTimeFormat("zh-CN", {
         month: "2-digit",
@@ -1700,6 +2047,74 @@
           duration: 0.8
         });
       }, 200);
+    }
+
+    function initPlacesMap() {
+      if (placesState.mapReady) return;
+      if (!window.L) return;
+
+      placesState.map = L.map("placesMap", {
+        zoomControl: false,
+        scrollWheelZoom: true
+      }).setView([35.1, 132.6], 8);
+
+      L.control.zoom({ position: "bottomright" }).addTo(placesState.map);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(placesState.map);
+
+      placesState.mapReady = true;
+      drawPlacesMap();
+    }
+
+    function drawPlacesMap() {
+      if (!placesState.mapReady) return;
+
+      placesState.lines.forEach(line => line.remove());
+      placesState.markers.forEach(marker => marker.remove());
+      placesState.lines = [];
+      placesState.markers = [];
+
+      ROUTE_DAYS.forEach(routeDay => {
+        const coords = routeDay.stops.map(item => [item.lat, item.lng]);
+        const line = L.polyline(coords, {
+          color: routeDay.color,
+          weight: 3,
+          opacity: 0.28,
+          dashArray: "6 10"
+        }).addTo(placesState.map);
+        placesState.lines.push(line);
+      });
+
+      const stops = visiblePlaces();
+      stops.forEach(item => {
+        const marker = L.marker([item.lat, item.lng], {
+          icon: markerIcon(item.stopIndex + 1, placesState.activeKey === item.key, item.routeDay.color),
+          title: item.name
+        }).addTo(placesState.map);
+
+        marker.on("click", () => selectPlace(item.key));
+        placesState.markers.push(marker);
+      });
+
+      const selected = currentPlace();
+      if (selected) {
+        placesState.map.flyTo([selected.lat, selected.lng], Math.max(placesState.map.getZoom(), 10), {
+          animate: true,
+          duration: 0.6
+        });
+        return;
+      }
+
+      if (stops.length) {
+        const bounds = L.latLngBounds(stops.map(item => [item.lat, item.lng]));
+        placesState.map.fitBounds(bounds, {
+          padding: window.matchMedia("(max-width: 860px)").matches ? [28, 28] : [420, 80],
+          animate: true,
+          duration: 0.5
+        });
+      }
     }
 
     function progressCoords() {
@@ -1870,6 +2285,109 @@
       els.playBtn.setAttribute("title", state.playing ? "暂停路线" : "播放路线");
     }
 
+    function renderPlacesFilters() {
+      const filters = [
+        `<button class="places-filter-btn${placesState.activeDay === "all" ? " active" : ""}" type="button" data-place-day="all">全部</button>`,
+        ...ROUTE_DAYS.map((routeDay, index) => {
+          const active = placesState.activeDay === String(index);
+          return `<button class="places-filter-btn${active ? " active" : ""}" style="--day-color:${routeDay.color}" type="button" data-place-day="${index}">${routeDay.day}</button>`;
+        })
+      ];
+
+      placesEls.filter.innerHTML = filters.join("");
+      placesEls.filter.querySelectorAll("[data-place-day]").forEach(button => {
+        button.addEventListener("click", () => {
+          placesState.activeDay = button.dataset.placeDay;
+          placesState.activeKey = "";
+          renderPlaces();
+        });
+      });
+    }
+
+    function renderPlacesList() {
+      const stops = visiblePlaces();
+      placesEls.count.textContent = `${stops.length} 个地点`;
+      placesEls.list.innerHTML = stops.map(item => `
+        <button class="places-item${placesState.activeKey === item.key ? " active" : ""}" type="button" data-place-key="${item.key}">
+          <span class="places-index" style="--day-color:${item.routeDay.color}">${item.stopIndex + 1}</span>
+          <span>
+            <span class="places-name">${escapeHtml(item.name)}</span>
+            <span class="places-sub">${item.routeDay.day} · ${item.time} · ${escapeHtml(item.place)}</span>
+          </span>
+        </button>
+      `).join("");
+
+      placesEls.list.querySelectorAll("[data-place-key]").forEach(button => {
+        button.addEventListener("click", () => selectPlace(button.dataset.placeKey));
+      });
+
+      const active = placesEls.list.querySelector(".places-item.active");
+      if (active) active.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+
+    function renderPlacesCard() {
+      const item = currentPlace();
+      if (!item) {
+        placesEls.card.hidden = true;
+        placesEls.chip.textContent = placesState.activeDay === "all" ? "显示全部候选地点，点击左侧地点或地图 pin 查看详情。" : "显示当前天数地点，点击地点或 pin 查看详情。";
+        return;
+      }
+
+      placesEls.chip.textContent = `${item.routeDay.day} · ${item.name}`;
+      placesEls.card.hidden = false;
+      placesEls.card.innerHTML = `
+        <div class="places-card-band" style="--day-color:${item.routeDay.color}"></div>
+        <div class="places-card-body">
+          <h2>${escapeHtml(item.name)}</h2>
+          <div class="places-meta">
+            <span>${item.routeDay.day}</span>
+            <span>${item.time}</span>
+            <span>${item.drive}</span>
+            <span>${item.stay}</span>
+          </div>
+          <p>${escapeHtml(item.desc)}</p>
+          <div class="places-actions">
+            <a href="${googleMapsUrl(item)}" target="_blank" rel="noopener noreferrer">Google Maps</a>
+            <button type="button" data-route-target="${item.dayIndex}-${item.stopIndex}">路线里查看</button>
+            <button type="button" data-close-place>关闭</button>
+          </div>
+        </div>
+      `;
+
+      const routeButton = placesEls.card.querySelector("[data-route-target]");
+      if (routeButton) {
+        routeButton.addEventListener("click", () => {
+          const [dayIndex, stopIndex] = routeButton.dataset.routeTarget.split("-").map(Number);
+          state.dayIndex = dayIndex;
+          state.stopIndex = stopIndex;
+          location.hash = "route";
+          showPage("route");
+        });
+      }
+
+      const closeButton = placesEls.card.querySelector("[data-close-place]");
+      if (closeButton) {
+        closeButton.addEventListener("click", () => {
+          placesState.activeKey = "";
+          renderPlaces();
+        });
+      }
+    }
+
+    function renderPlaces() {
+      renderPlacesFilters();
+      renderPlacesList();
+      renderPlacesCard();
+      drawPlacesMap();
+    }
+
+    function selectPlace(key) {
+      const item = allStops().find(stopItem => stopItem.key === key);
+      if (!item) return;
+      placesState.activeKey = key;
+      renderPlaces();
+    }
+
     function render() {
       renderVisitor();
       renderDayTabs();
@@ -1878,6 +2396,33 @@
       renderDetail();
       renderTimeline();
       drawMap();
+    }
+
+    function showPage(page) {
+      state.page = page;
+      const isMapPage = page === "map";
+      els.routeApp.hidden = isMapPage;
+      els.placesApp.hidden = !isMapPage;
+
+      if (isMapPage) {
+        pause(false);
+        initPlacesMap();
+        renderPlaces();
+        if (placesState.mapReady) {
+          window.setTimeout(() => placesState.map.invalidateSize(), 50);
+        }
+        return;
+      }
+
+      initMap();
+      render();
+      if (state.mapReady) {
+        window.setTimeout(() => state.map.invalidateSize(), 50);
+      }
+    }
+
+    function syncPageFromHash() {
+      showPage(pageFromHash());
     }
 
     async function addComment(event) {
@@ -2070,14 +2615,18 @@
       }
     });
 
+    window.addEventListener("hashchange", syncPageFromHash);
+
     window.addEventListener("resize", () => {
       if (state.mapReady) {
         state.map.invalidateSize();
       }
+      if (placesState.mapReady) {
+        placesState.map.invalidateSize();
+      }
     });
 
-    render();
-    initMap();
+    showPage(state.page);
     refreshSyncedComments();
     if (syncEnabled()) {
       window.setInterval(refreshSyncedComments, SYNC_REFRESH_MS);
