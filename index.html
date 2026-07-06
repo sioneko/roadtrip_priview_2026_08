@@ -894,12 +894,13 @@
     #placesMap {
       position: absolute;
       inset: 0;
+      z-index: 0;
       background: #dce9ee;
     }
 
     .places-shell {
       position: relative;
-      z-index: 5;
+      z-index: 700;
       display: grid;
       grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
       gap: 14px;
@@ -920,6 +921,8 @@
     }
 
     .places-panel {
+      position: relative;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       min-height: 0;
@@ -1029,6 +1032,8 @@
     }
 
     .places-chip {
+      position: relative;
+      z-index: 2;
       justify-self: center;
       align-self: start;
       max-width: min(620px, 100%);
@@ -1039,6 +1044,7 @@
 
     .places-card {
       position: absolute;
+      z-index: 3;
       right: 14px;
       bottom: 14px;
       width: min(360px, calc(100vw - 420px));
